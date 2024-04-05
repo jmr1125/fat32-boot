@@ -146,6 +146,7 @@ struct LFN : public file_node {
     for (auto &n : Names) {
       res.push_back({.b = n});
     }
+    reverse(res.begin(), res.end());
     return res;
   }
 };
@@ -179,6 +180,7 @@ struct volume : public file_node {
 };
 struct file : public file_node {
   int size;
+  string real_file;
   file(int s) : size(s) {}
   virtual ~file() override = default;
   virtual int Entrysize() override { return FileEntrySize; }
