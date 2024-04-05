@@ -299,6 +299,13 @@ FileEntry read_fileentry(std::ifstream &fin) {
   it = std::istreambuf_iterator<char>(fin);
   return read_fileentry(it, isLong);
 }
+inline void write(ostream &os, const FileEntry &f) {
+  if (is_long(f)) {
+    write(os, f.b);
+  } else {
+    write(os, f.a);
+  }
+}
 #undef C
 
 #include <iomanip>
@@ -408,3 +415,12 @@ inline std::ostream &operator<<(std::ostream &ost, const FileEntry v) {
 }
 #undef print
 #undef print1
+
+unsigned char ChkSum(const char *str) {
+  unsigned char chk = 0;
+  short i;
+  for (i = 11; i != 0; i--) {
+    chk = ((chk & 1) ? 0x80 : 0) + (chk >> 1) + *str++;
+  }
+  return chk;
+}

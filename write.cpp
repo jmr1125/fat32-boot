@@ -30,15 +30,17 @@ int Media = 0xf8;
 int total_clusters = 2;
 
 struct filename {
+  int id;
   string x;
   operator string() const { return x; }
   auto substr(int a, int b = -1) const { return x.substr(a, b); }
   auto find_last_of(char c) const { return x.find_last_of(c); }
   auto find(char c) const { return x.find(c); }
-  auto size() const { return x.size(); }
+  auto Entrysize() const { return FileEntrySize; }
   auto operator[](int i) const { return x[i]; }
   auto &operator[](int i) { return x[i]; }
-  filename(string s) : x(s) {}
+  filename(string s) : x(s), id(256) {}
+  filename(string s, int i) : x(s), id(i) {}
 };
 namespace std {
 template <> struct hash<filename> {
@@ -46,8 +48,12 @@ template <> struct hash<filename> {
 };
 } // namespace std
 ostream &operator<<(ostream &os, const filename &f) { return os << f.x; }
-bool operator<(const filename &a, const filename &b) { return a.x < b.x; }
-bool operator==(const filename &a, const filename &b) { return a.x == b.x; }
+bool operator<(const filename &a, const filename &b) {
+  return a.id < b.id || (a.id == b.id && a.x < b.x);
+}
+bool operator==(const filename &a, const filename &b) {
+  return a.id < b.id || (a.id == b.id && a.x == b.x);
+}
 bool operator==(const filename &a, const char *b) {
   return strcmp(a.x.c_str(), b) == 0;
 }
@@ -55,18 +61,127 @@ bool operator==(const filename &a, const char *b) {
 struct file_node {
   vector<DWORD> clusters;
   virtual ~file_node() = default;
-  virtual int type() = 0;
+  virtual int Entrysize() = 0;
   virtual void print(int) = 0;
   virtual void alloc_cluster() = 0;
   virtual void generate_fat() = 0;
   virtual void generate_fileentry(ostream &, QWORD, QWORD) = 0;
-  virtual FileEntry get_fe() = 0;
+  virtual vector<FileEntry> get_fe(string name, string ext,
+                                   int grand_parent_cluster,
+                                   int parent_cluster) = 0;
+};
+struct LFN : public file_node {
+  vector<LongFileName> Names;
+  LFN() = default;
+  LFN(string name, BYTE chk) { set_name(name, chk); }
+  virtual ~LFN() override = default;
+  virtual int Entrysize() override { return FileEntrySize * Names.size(); }
+  virtual void print(int i = 0) override {
+    cout << string(i, ' ') << "LFN\n";
+    {
+      int i = 0;
+      for (auto &n : Names) {
+        cout << string(i + 2, ' ') << i++ << "\n";
+        cout << string(i + 2, ' ') << FileEntry{.b = n} << "\n";
+      }
+    }
+  }
+  virtual void alloc_cluster() override { return; }
+  virtual void generate_fat() override { return; }
+  void set_name(string s, BYTE chk) {
+    for (int i = 0; i < s.size(); i += 13) {
+      string cur = s.substr(i, 13);
+      LongFileName tmp = {
+          .Num =
+              static_cast<BYTE>((i / 13 + 1) | (i + 13 > s.size() ? 0x40 : 0)),
+          .Flag = (BYTE)0x0f,
+          .Rsv = 0,
+          .Check = chk,
+          .Sect = 0,
+      };
+      for (int i = 0; i < 10; i++) {
+        if (i % 2 == 1)
+          tmp.UnicodeName[i] = 0;
+        else {
+          if (i / 2 >= cur.size())
+            tmp.UnicodeName[i] = 0;
+          else
+            tmp.UnicodeName[i] = cur[i / 2];
+        }
+      }
+      if (10 / 2 >= cur.size()) {
+        for (int i = 0; i < 12; i++)
+          tmp.UnicodeName1[i] = 0xff;
+      } else
+        for (int i = 0; i < 12; i++) {
+          if (i % 2 == 1)
+            tmp.UnicodeName1[i] = 0;
+          else {
+            if ((10 + i) / 2 >= cur.size())
+              tmp.UnicodeName1[i] = 0;
+            else
+              tmp.UnicodeName1[i] = cur[(10 + i) / 2];
+          }
+        }
+      if (22 / 2 >= cur.size()) {
+        for (int i = 0; i < 4; i++)
+          tmp.UnicodeName2[i] = 0xff;
+      } else
+        for (int i = 0; i < 4; i++) {
+          if (i % 2 == 1)
+            tmp.UnicodeName2[i] = 0;
+          else {
+            if ((22 + i) / 2 >= cur.size())
+              tmp.UnicodeName2[i] = 0;
+            else
+              tmp.UnicodeName2[i] = cur[(22 + i) / 2];
+          }
+        }
+      Names.push_back(tmp);
+    }
+  }
+  virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual vector<FileEntry> get_fe(string, string, int, int) override {
+    vector<FileEntry> res;
+    for (auto &n : Names) {
+      res.push_back({.b = n});
+    }
+    return res;
+  }
+};
+struct volume : public file_node {
+  virtual ~volume() override = default;
+  virtual int Entrysize() override { return FileEntrySize; }
+  virtual void print(int i = 0) override {
+    cout << string(i, ' ') << "Volume\n";
+  }
+  virtual void alloc_cluster() override { return; }
+  virtual void generate_fat() override { return; }
+  virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {
+    ShortFileName fe;
+    for (int i = 0; i < 8; ++i) {
+      if (i < name.size())
+        fe.FileName[i] = name[i];
+      else
+        fe.FileName[i] = ' ';
+    }
+    for (int i = 0; i < 3; ++i) {
+      if (i < ext.size())
+        fe.Extention[i] = ext[i];
+      else
+        fe.Extention[i] = ' ';
+    }
+    fe.Attr = (BYTE)0x8;
+    fe.FileLen = fe.ClsH16 = fe.ClsL16 = 0;
+    return {FileEntry{.a = fe}};
+  }
 };
 struct file : public file_node {
   int size;
   file(int s) : size(s) {}
   virtual ~file() override = default;
-  virtual int type() override { return 1; }
+  virtual int Entrysize() override { return FileEntrySize; }
   virtual void print(int i = 0) override {
     cout << string(i, ' ') << "File: " << size << " bytes\n";
     cout << string(i, ' ') << "Clusters: ";
@@ -87,6 +202,25 @@ struct file : public file_node {
     fat.at(clusters.back()) = 0xfffffff8;
   }
   virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {
+    ShortFileName fe;
+    for (int j = 0; j < 8; ++j) {
+      if (j < name.size())
+        fe.FileName[j] = name[j];
+      else
+        fe.FileName[j] = ' ';
+    }
+    for (int j = 0; j < 3; ++j) {
+      if (j < ext.size())
+        fe.Extention[j] = ext[j];
+      else
+        fe.Extention[j] = ' ';
+    }
+    fe.Attr = (BYTE)0x0;
+    fe.ClsH16 = clusters[0] >> 16;
+    fe.ClsL16 = clusters[0] & 0xffff;
+    return {FileEntry{.a = fe}};
+  }
 };
 struct directory : public file_node {
   map<filename, file_node *> files;
@@ -95,7 +229,7 @@ struct directory : public file_node {
       delete i.second;
     }
   }
-  virtual int type() override { return 2; }
+  virtual int Entrysize() override { return FileEntrySize; }
   virtual void print(int x = 0) override {
     cout << string(x, ' ') << "Clusters: ";
     for (auto &i : clusters) {
@@ -108,7 +242,10 @@ struct directory : public file_node {
     }
   }
   virtual void alloc_cluster() override {
-    int size = files.size() * FileEntrySize;
+    int size = 0;
+    for (auto &i : files) {
+      size += i.second->Entrysize();
+    }
     if (size == 0) {
       return;
     }
@@ -132,6 +269,36 @@ struct directory : public file_node {
       i.second->generate_fat();
     }
   }
+  virtual vector<FileEntry> get_fe(string name, string ext,
+                                   int grand_parent_cluster,
+                                   int parent_cluster) override {
+    ShortFileName fe;
+    for (int j = 0; j < 8; ++j) {
+      if (j < name.size())
+        fe.FileName[j] = name[j];
+      else
+        fe.FileName[j] = ' ';
+    }
+    for (int j = 0; j < 3; ++j) {
+      if (j < ext.size())
+        fe.Extention[j] = ext[j];
+      else
+        fe.Extention[j] = ' ';
+    }
+    fe.Attr = (BYTE)0x10;
+    if (name == "..") {
+      fe.ClsH16 = grand_parent_cluster >> 16;
+      fe.ClsL16 = grand_parent_cluster & 0xffff;
+    } else if (name == ".") {
+      fe.ClsH16 = parent_cluster >> 16;
+      fe.ClsL16 = parent_cluster & 0xffff;
+    } else {
+      fe.ClsH16 = clusters[0] >> 16;
+      fe.ClsL16 = clusters[0] & 0xffff;
+    }
+    fe.FileLen = 0;
+    return {FileEntry{.a = fe}};
+  }
 #define check()                                                                \
   if (now == BytesPerSec * SecPerClus / 32) {                                  \
     now = 0;                                                                   \
@@ -141,124 +308,44 @@ struct directory : public file_node {
     }                                                                          \
   }
   virtual void generate_fileentry(ostream &os, QWORD base,
-                                  QWORD parent) override {
-    static int flag = 0;
+                                  QWORD parent_cluster) override {
     int clust = clusters[0], now = 0;
-    if (flag == 0) {
-      flag = 1;
-      ShortFileName se;
-      for (int i = 0; i < 11; ++i) {
-        se.FileName[i] = bootsec.BS_VolLab[i];
-      }
-      se.Extention[0] = ' ';
-      se.Extention[1] = ' ';
-      se.Extention[2] = ' ';
-      se.Attr = 0x28;
-      os.seekp(base, ios::beg);
-      ++now;
-      write(os, se);
-    }
     for (auto &i : files) {
-      if (i.first == ".") {
-        ShortFileName se;
-        se.FileName[0] = '.';
-        se.FileName[1] = se.FileName[2] = se.FileName[3] = se.FileName[4] =
-            se.FileName[5] = se.FileName[6] = se.FileName[7] = se.Extention[0] =
-                se.Extention[1] = se.Extention[2] = ' ';
-        se.Attr = (BYTE)0x10;
-        se.ClsH16 = clusters[0] >> 16;
-        se.ClsL16 = clusters[0] & 0xffff;
-        se.FileLen = 0;
+      string name = i.first.substr(0, i.first.find_last_of('.'));
+      string ext = i.first.substr(i.first.find_last_of('.') + 1);
+      if (i.first.find('.') == string::npos) {
+        name = i.first;
+        ext = "";
+      }
+      if (i.first == "." || i.first == "..") {
+        name = i.first;
+        ext = "";
+      }
+      auto fes = i.second->get_fe(name, ext, parent_cluster, clusters[0]);
+      for (auto &fe : fes) {
         check();
         os.seekp(base + (clust - 2) * BytesPerSec * SecPerClus +
                      now * FileEntrySize,
                  ios::beg);
         ++now;
-        write(os, se);
-        continue;
-      } else if (i.first == "..") {
-        ShortFileName se;
-        se.FileName[0] = se.FileName[1] = '.';
-        se.FileName[2] = se.FileName[3] = se.FileName[4] = se.FileName[5] =
-            se.FileName[6] = se.FileName[7] = se.Extention[0] =
-                se.Extention[1] = se.Extention[2] = ' ';
-        se.Attr = (BYTE)0x10;
-        se.ClsH16 = parent >> 16;
-        se.ClsL16 = parent & 0xff;
-        se.FileLen = 0;
-        check();
-        os.seekp(base + (clust - 2) * BytesPerSec * SecPerClus +
-                     now * FileEntrySize,
-                 ios::beg);
-        ++now;
-        write(os, se);
-        continue;
-      } else {
-        string name = i.first.substr(0, i.first.find_last_of('.'));
-        string ext = i.first.substr(i.first.find_last_of('.') + 1);
-        if (i.first.find('.') == string::npos) {
-          name = i.first;
-          ext = "";
-        }
-        FileEntry fe;
-        if (name.length() > 8 || ext.length() > 3) { // long filename
-          cerr << "Error: " << __FILE__ << ":" << __LINE__
-               << " long filename not supported" << endl;
-        } else { // short filename
-          for (int i = 0; i < 8; ++i) {
-            if (i < name.length()) {
-              fe.a.FileName[i] = name[i];
-            } else {
-              fe.a.FileName[i] = ' ';
-            }
-          }
-          for (int i = 0; i < 3; ++i) {
-            if (i < ext.length()) {
-              fe.a.Extention[i] = ext[i];
-            } else {
-              fe.a.Extention[i] = ' ';
-            }
-          }
-          if (i.second->type() == 0) {
-            for (int j = 0; j < 8; ++j) {
-              if (j < i.first.size())
-                fe.a.FileName[j] = i.first[j];
-              else
-                fe.a.FileName[j] = ' ';
-            }
-            fe.a.FileLen = 0;
-            fe.a.Attr = 0x28;
-          } else {
-            fe.a.Attr = (i.second->type() == 2) ? 0x10 : 0x00;
-            fe.a.ClsH16 = i.second->clusters[0] >> 16;
-            fe.a.ClsL16 = i.second->clusters[0] & 0xffff;
-            fe.a.FileLen = (i.second->type() == 1)
-                               ? dynamic_cast<file *>(i.second)->size
-                               : 0;
-          }
-          check();
-          os.seekp(base + (clust - 2) * BytesPerSec * SecPerClus +
-                       now * FileEntrySize,
-                   ios::beg);
-          ++now;
-          write(os, fe.a);
-          if (i.second->type() == 2) {
-            dynamic_cast<directory *>(i.second)->generate_fileentry(
-                os, base, clusters[0] == 2 ? 0 : clusters[0]);
-          }
-        }
+        write(os, fe);
+        if (!(name == "." || name == ".."))
+          i.second->generate_fileentry(os, base, parent_cluster);
       }
     }
   }
 #undef check
 };
-vector<string> split(const string &s) {
-  vector<string> result;
+vector<filename> split(const string &s) {
+  vector<filename> result;
   regex r(R"(/[^/]+)");
   regex_iterator<string::const_iterator> it(s.begin(), s.end(), r);
   regex_iterator<string::const_iterator> end;
   for (; it != end; it++) {
-    result.push_back(it->str().substr(1));
+    string str = it->str().substr(1);
+    result.push_back(filename(str, (str == ".")    ? 64
+                                   : (str == "..") ? 65
+                                                   : 256));
   }
   return result;
 }
@@ -295,6 +382,9 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
   while (getline(f, line)) {
     string l = line.substr(0, line.find(":"));
     string r = line.substr(line.find(":") + 1);
+    if (l == "vol") {
+      root.files[filename(r, 128)] = new volume;
+    }
     if (l == "dir") {
       auto d = &root;
       for (auto &i : split(r)) {
@@ -315,6 +405,19 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
         d = dynamic_cast<directory *>(d->files[i]);
       }
       d->files[x[x.size() - 2]] = new file(stoi(x[x.size() - 1]));
+    }
+    if (l == "lname") {
+      auto d = &root;
+      auto x = split(r);
+      for (int I = 0; I < x.size() - 2; ++I) {
+        auto i = x[I];
+        if (d->files.count(i) == 0) {
+          d->files[i] = new directory;
+        }
+        d = dynamic_cast<directory *>(d->files[i]);
+      }
+      d->files[filename(x[x.size() - 1], 255)] =
+          new LFN(x[x.size() - 2], ChkSum(x[x.size() - 1].x.c_str()));
     }
   }
   f.close();
