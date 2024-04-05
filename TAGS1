@@ -1,0 +1,105 @@
+
+read.cpp,16
+int main(6,101
+
+test.cpp,130
+int main(4,64
+void quickSort(9,153
+int partition(16,337
+void mergeSort(29,628
+void merge(37,793
+void comparisonSort(60,1217
+
+fat32.hpp,2947
+typedef unsigned char BYTE;3,35
+typedef unsigned short WORD;4,63
+typedef unsigned int DWORD;5,92
+typedef unsigned long long QWORD;6,120
+struct bootsector 7,154
+  BYTE jmpcmd[jmpcmd8,196
+  BYTE BS_OEMNAME[BS_OEMNAME9,238
+  WORD BPB_BytsPerSec 10,280
+  BYTE BPB_SecPerClus 11,322
+  WORD BPB_RsvdSecCnt;12,364
+  BYTE BPB_NumFATs 13,406
+  WORD BPB_RootEntCnt 14,449
+  WORD BPB_TotSec16 15,492
+  BYTE BPB_Media 16,535
+  WORD BPB_FATSz16 17,578
+  WORD BPB_SecPerTrk 18,621
+  WORD BPB_NumHeads 19,664
+  DWORD BPB_HiddSec 20,707
+  DWORD BPB_TotSec32;21,750
+  DWORD BPB_FATSz32;22,793
+  WORD BPB_ExtFlags 23,836
+  WORD BPB_FSVer 24,879
+  DWORD BPB_RootClus 25,922
+  WORD BPB_FSInfo 26,965
+  WORD BPB_BkBootSec 27,1008
+  BYTE BPB_Reserved[BPB_Reserved28,1051
+  BYTE BS_DrvNum 29,1094
+  BYTE BS_Reserved 30,1153
+  BYTE BS_BootSig 31,1196
+  DWORD BS_VolID;32,1239
+  BYTE BS_VolLab[BS_VolLab33,1282
+  BYTE BS_FilSysType[BS_FilSysType34,1325
+  BYTE BS_BootCode32[BS_BootCode3235,1399
+  WORD BS_BootSign 36,1473
+struct FSInfo 38,1575
+  DWORD FSI_LeadSig 39,1623
+  BYTE FSI_Reserved1[FSI_Reserved140,1669
+  DWORD FSI_StrucSig 41,1715
+  DWORD FSI_Free_Count;42,1763
+  DWORD FSI_Nxt_Free;43,1811
+  BYTE FSI_Reserved2[FSI_Reserved244,1859
+  DWORD FSI_TrailSig 45,1907
+template <typename InpIt> BYTE c(51,2119
+#define C 56,2203
+template <typename InpIt> BYTE readByte(57,2219
+template <typename InpIt> WORD readWORD(58,2286
+template <typename InpIt> DWORD readDWORD(61,2372
+template <typename InpIt> QWORD readQWORD(64,2484
+template <typename InpIt> bootsector read_bootsector(67,2598
+template <typename InpIt> FSInfo read_fsinfo(108,3790
+struct EmptySector 123,4194
+  BYTE zeros[zeros124,4215
+  WORD Sign 125,4237
+struct ShortFileName 127,4286
+  BYTE FileName[FileName128,4309
+  BYTE Extention[Extention129,4340
+  BYTE Attr;130,4415
+  BYTE Reserved;131,4490
+  BYTE Time10ms;132,4565
+  WORD TimeCreate;133,4639
+  WORD DateCreate;134,4714
+  WORD DateVst;135,4789
+  WORD SecH16;136,4864
+  WORD TimeModify;137,4939
+  WORD DateModify;138,5014
+  WORD SecL16;139,5089
+  DWORD FileLen;140,5164
+struct LongFileName 142,5242
+  BYTE Num;143,5264
+  BYTE UnicodeName[UnicodeName144,5343
+  BYTE Flag;145,5379
+  BYTE Rsv;146,5421
+  BYTE Check;147,5457
+  BYTE UnicodeName1[UnicodeName1148,5493
+  WORD Sect;149,5529
+  BYTE UnicodeName2[UnicodeName2150,5566
+union FileEntry 152,5606
+  ShortFileName a;153,5624
+  LongFileName b;154,5643
+#define is_long(156,5664
+template <typename InpIt> FileEntry read_fileentry(161,5874
+FileEntry read_fileentry(200,6831
+#undef C208,7103
+inline auto _print(212,7151
+inline auto _print1(223,7468
+#define print(229,7610
+#define print1(230,7648
+inline std::ostream &operator<<(operator<<231,7688
+inline std::ostream &operator<<(operator<<269,9866
+inline std::ostream &operator<<(operator<<280,10391
+#undef print312,11936
+#undef print1313,11949
