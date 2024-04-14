@@ -509,8 +509,9 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
                           0);
   output.close();
   cout << "Finish!" << endl;
-  cout << "Sec Per Tracks (STP): "<<dec << bootsec.BPB_SecPerTrk << endl;
+  cout << "Sec Per Tracks (STP): " << dec << bootsec.BPB_SecPerTrk << endl;
   cout << "Head: " << bootsec.BPB_NumHeads << endl;
-  cout << "Sec Per Clus: " << (int)bootsec.BPB_SecPerClus << endl;
+  cout << "cylinder: "
+       << Totsecs / (bootsec.BPB_SecPerTrk * bootsec.BPB_NumHeads) << endl;
   return 0;
 }

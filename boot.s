@@ -45,128 +45,146 @@ main:
 	mov sp, 0x7c00
 	mov BYTE [DrvNum], dl
 
-	mov  ax, [0x12]; BPB_RootEntCnt
-	mov  cx, 32
-	mul  cx
-	add  ax, [BPB_BytsPerSec]
-	dec  ax
-	div  WORD [BPB_SecPerClus]; root_dir_sectors
-	add  ax, [fat_loc]
-	xchg ax, bx; now it stores at bx
-	xor  ax, ax
+	mov ax, [BPB_RsvdSecCnt]
+	mov [fat_loc], ax
+	mov bx, [fat_loc]
 
-	mov eax, [0x24]
-	xor cx, cx
-	mov cl, [0x10]
-	mul ecx; ax = num fats * fat size
-	add ax, bx
-	mov [data_loc], ax
+	mov eax, [BPB_FATSz32]
+	mul DWORD [BPB_NumFATs]
+	mov ebx, eax
 
-	mov  bx, helloworld
-	call puts
-	mov  bx, endl
-	call puts
-	xor  bx, bx
-	mov  bl, [0xd]
-	call puthex
-	mov  bx, endl
-	call puts
+	mov eax, [BPB_RootEntCnt]
+	mov ecx, 32
+	mul ecx
+	add eax, [BPB_BytsPerSec]
+	dec eax
+	div DWORD [BPB_BytsPerSec]
 
-	mov eax,1
-	push cx
-	push bx
-	push ax
-	pop bx
-	call puthex
-	mov bx, endl
+	add eax, ebx
+	add eax, [BPB_RsvdSecCnt]
+
+	mov [data_loc], eax
+
+	xor eax, eax
+	mov  ax, [fat_loc]
+	call LBACHS
+	mov  dh, 1
+	mov  di, buf_fat
+	call disk_read
+
+	xor eax, eax
+	mov  ax, [data_loc]
+	sub ax,8
+	call LBACHS
+	mov  dh, 16
+	mov  di, buf_data
+	call disk_read
+
+	xor edx, edx
+	mov bx, buf_data
+
+.loop1:
+	;find kernel entry
+	or    WORD [bx], 0
+	jz    .end1
+	mov   bx, [bx]
+	call  puts
+	xor   si, si
+
+.cmp:
+	;compare kernel entry
+	mov      al, [bx+si]
+	mov      cl, [kernel+si]
+	cmp      al, cl
+	jne      .break
+	inc      si
+	cmp      si, 11
+	jl       .cmp
+	;;       found
+	mov      ax, si
+	jmp      .end1
+
+.break:
+	add bx, 32
+	jmp .loop1
+
+.end1:
+	mov  bx, not_found
 	call puts
-	pop bx
-	call puthex
-	mov bx, endl
-	call puts
-	pop bx
-	call puthex
 
 hlt:
 	hlt
 	jmp hlt
-lbachs:	push dx			;ax=lba => ax-sector bx-head cx-cylinder
-	xor dx, dx
-	mov bx, [BPB_SecPerTrk]
-	div bx
-	inc dx
-	push dx
+	; Compile using NASM compiler (Again look for it using a search engine)
+	; Input: ax - LBA value
+	; Output: ax - Sector
+	; bx - Head
+	; cx - Cylinder
 
-	xor dx, dx
-	mov bx, [BPB_NumHeads]
-	div bx
+LBACHS:
+	PUSH dx; Save the value in dx
+	XOR  dx, dx; Zero dx
+	MOV  bx, [BPB_SecPerTrk]; Move into place STP (LBA all ready in place)
+	DIV  bx; Make the divide (ax/bx -> ax, dx)
+	inc  dx; Add one to the remainder (sector value)
+	push dx; Save the sector value on the stack
 
-	mov cx, ax
-	mov bx, dx
-	pop ax
-	pop dx
-	ret
-disk_read:			;eax = lba
+	XOR dx, dx; Zero dx
+	MOV bx, [BPB_NumHeads]; Move NumHeads into place (NumTracks all ready in place)
+	DIV bx; Make the divide (ax/bx -> ax, dx)
+
+	MOV cx, ax; Move ax to cx (Cylinder)
+	MOV bx, dx; Move dx to bx (Head)
+	POP ax; Take the last value entered on the stack off.
+	;   It doesn't need to go into the same register.
+	;   (Sector)
+	POP dx; Restore dx, just in case something important was
+	;   originally in there before running this.
+	RET ; Return to the main function
+
+	disk_read:     ;ax-sector, bx-head, cx-cylinder, dh-sector count, di=buffer
 	push bp
-	mov bp,sp
-	sub bp,17
-	mov [bp+17], bx			;buffer
-	mov [bp+16], cl			;len in sectors
-	xor edx, edx
-	mov ebx, eax
-	div DWORD [BPB_SecPerTrk]
-	mov [bp+12], eax		;Temp
-	inc edx
-	mov [bp+8], edx		;Sector
-	xor edx, edx
-	div DWORD [BPB_NumHeads] ;Temp%NumOfHead
-	mov [bp+4], edx		;Head
-	mov eax, [bp+8]		;Temp
-	div DWORD [BPB_NumHeads] ;Temp/NumOfHead
-	mov [bp], eax		;Cylinder
-	;; [bp] cylinder
-	;; [bp+4] head
-	;; [bp+8] sector
-	;; [bp+12] temp
-	;; [bp+16] len
-	;; [bp+17] buffer
-	mov ah,2
-	
-	mov al, [bp+16]
-	
-	mov ecx, [bp]
-	and ecx, 0xff
-	mov ch,cl
-	
-	mov edx, [bp]
-	shr edx, 2
-	and edx, 0xc0
-	mov cl,dl
-
-	mov dh, [bp+4]
-	
-	mov dl, [DrvNum]
-	
-	int 0x13
-	jc .error
-	add sp, 17
-	pop bp
+	mov  bp, sp
+	sub  bp, 6
+	mov  [bp], ax
+	mov  [bp+2], bx
+	mov  [bp+4], cx
+	xor  eax, eax
+	xor  ebx, ebx
+	xor  ecx, ecx
+	mov  ah, 2
+	mov  al, dh
+	xor  edx, edx
+	mov  cx, [bp+4]
+	shr  cx, 2
+	and  cx, 0xc0
+	or   cl, [bp]
+	mov  ch, [bp+4]
+	mov  bx, di
+	stc
+	mov  dl, [DrvNum]
+	int  0x13
+	jc   .error
+	add  bp, 6
+	pop  bp
 	ret
-	.error:
-	mov bx, disk_error
-		call puts
-		jmp hlt
-	
+
+.error:
+	mov  bx, disk_error
+	call puts
+	jmp  hlt
+
 puthex:
 	push ebx
-	mov di, HexBuf
-	mov cx, 8
-	mov al, '0'
-	rep stosb
-	mov BYTE [HexBuf+8], 0
-	lea di, [HexBuf+7]
-	pop ebx
-	.loop:
+	mov  di, HexBuf
+	mov  cx, 8
+	mov  al, '0'
+	rep  stosb
+	mov  BYTE [HexBuf+8], 0
+	lea  di, [HexBuf+7]
+	pop  ebx
+
+.loop:
 	mov eax, ebx; put bx in hex  low ---- high
 	and eax, 0fh
 	cmp eax, 9
@@ -180,13 +198,13 @@ puthex:
 .alpha:
 	add eax, 'A'-10
 
-	.print:
-	mov [es:di], al
-	dec di
+.print:
+	mov  [es:di], al
+	dec  di
 	shr  ebx, 4
 	or   ebx, ebx
-	jnz .loop
-	mov bx, HexBuf
+	jnz  .loop
+	mov  bx, HexBuf
 	call puts
 	ret
 
@@ -208,15 +226,26 @@ puts:
 
 .done:
 	ret
-endl       db 0xd, 0xa, 0
-	helloworld db "Hello, World!", 0
-	disk_error db "Disk Error", 0
-times      510-($-$$) db 0
-dw         0aa55h
-	section    .bss
-HexBuf: resb 8
-	db ?
-DrvNum     db ?
+
+endl db 0xd, 0xa, 0
+
+data db "data ", 0
+size    db "size: ", 0
+loc     db "location ", 0
+disk_error db "Disk Error", 0
+not_found  db "Not Found", 0
+kernel  db "kernel     "
+times   510-($-$$) db 0
+dw      0aa55h
+section .bss
+
+HexBuf resb   8
+db     ?
+DrvNum db ?
 fat_loc dw ?  ; ATTENTION: in SECTOR
 data_loc dw ?  ; ATTENTION: in SECTOR
-buffer     resb 512
+buf_fat resb 512
+buf_data resb 512
+
+list times 512 dd ?
+list_i dd ?

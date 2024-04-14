@@ -1,3 +1,3 @@
-ata0-master: type=disk, path= res.img, mode=flat
+ata0-master: type=disk, mode=flat, translation=auto, path=res.img
 boot: disk
 display_library: sdl2 #, options="gui_debug"
