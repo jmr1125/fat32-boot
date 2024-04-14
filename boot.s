@@ -65,19 +65,18 @@ main:
 
 	mov [data_loc], eax
 
-	xor eax, eax
+	xor  eax, eax
 	mov  ax, [fat_loc]
-	call LBACHS
-	mov  dh, 1
-	mov  di, buf_fat
+	mov  cl, 1
+	mov  dl, [DrvNum]
+	mov  bx, buf_fat
 	call disk_read
 
-	xor eax, eax
+	xor  eax, eax
 	mov  ax, [data_loc]
-	sub ax,8
-	call LBACHS
-	mov  dh, 16
-	mov  di, buf_data
+	mov  cl, 1
+	mov  dl, [DrvNum]
+	mov  bx, buf_data
 	call disk_read
 
 	xor edx, edx
@@ -87,8 +86,6 @@ main:
 	;find kernel entry
 	or    WORD [bx], 0
 	jz    .end1
-	mov   bx, [bx]
-	call  puts
 	xor   si, si
 
 .cmp:
@@ -102,14 +99,19 @@ main:
 	jl       .cmp
 	;;       found
 	mov      ax, si
-	jmp      .end1
+	jmp      .end2
 
 .break:
 	add bx, 32
 	jmp .loop1
 
-.end1:
+	.end1:
+	
 	mov  bx, not_found
+	call puts
+	jmp hlt
+	.end2:
+	mov  bx, not_found+4
 	call puts
 
 hlt:
@@ -121,58 +123,86 @@ hlt:
 	; bx - Head
 	; cx - Cylinder
 
-LBACHS:
-	PUSH dx; Save the value in dx
-	XOR  dx, dx; Zero dx
-	MOV  bx, [BPB_SecPerTrk]; Move into place STP (LBA all ready in place)
-	DIV  bx; Make the divide (ax/bx -> ax, dx)
-	inc  dx; Add one to the remainder (sector value)
-	push dx; Save the sector value on the stack
+lba_to_chs:
+	;ax  - LBA
+	;    - cx [bits 0-5]: sector number
+	;    - cx [bits 6-15]: cylinder
+	;    - dh: head
+	push ax
+	push dx
 
-	XOR dx, dx; Zero dx
-	MOV bx, [BPB_NumHeads]; Move NumHeads into place (NumTracks all ready in place)
-	DIV bx; Make the divide (ax/bx -> ax, dx)
+	xor dx, dx; dx = 0
+	div word [BPB_SecPerTrk]; ax = LBA / SectorsPerTrack
+	;   dx = LBA % SectorsPerTrack
 
-	MOV cx, ax; Move ax to cx (Cylinder)
-	MOV bx, dx; Move dx to bx (Head)
-	POP ax; Take the last value entered on the stack off.
-	;   It doesn't need to go into the same register.
-	;   (Sector)
-	POP dx; Restore dx, just in case something important was
-	;   originally in there before running this.
-	RET ; Return to the main function
+	inc dx; dx = (LBA % SectorsPerTrack + 1) = sector
+	mov cx, dx; cx = sector
 
-	disk_read:     ;ax-sector, bx-head, cx-cylinder, dh-sector count, di=buffer
-	push bp
-	mov  bp, sp
-	sub  bp, 6
-	mov  [bp], ax
-	mov  [bp+2], bx
-	mov  [bp+4], cx
-	xor  eax, eax
-	xor  ebx, ebx
-	xor  ecx, ecx
-	mov  ah, 2
-	mov  al, dh
-	xor  edx, edx
-	mov  cx, [bp+4]
-	shr  cx, 2
-	and  cx, 0xc0
-	or   cl, [bp]
-	mov  ch, [bp+4]
-	mov  bx, di
-	stc
-	mov  dl, [DrvNum]
-	int  0x13
-	jc   .error
-	add  bp, 6
-	pop  bp
+	xor dx, dx; dx = 0
+	div word [BPB_NumHeads]; ax = (LBA / SectorsPerTrack) / Heads = cylinder
+	;   dx = (LBA / SectorsPerTrack) % Heads = head
+	mov dh, dl; dh = head
+	mov ch, al; ch = cylinder (lower 8 bits)
+	shl ah, 6
+	or  cl, ah; put upper 2 bits of cylinder in CL
+
+	pop ax
+	mov dl, al; restore DL
+	pop ax
 	ret
 
-.error:
-	mov  bx, disk_error
-	call puts
-	jmp  hlt
+	
+	; Reads sectors from a disk
+	; Parameters:
+	; - ax: LBA address
+	; - cl: number of sectors to read (up to 128)
+	; - dl: drive number
+	; - es:bx: memory address where to store read data
+	
+
+disk_read:
+
+	push ax; save registers we will modify
+	push bx
+	push cx
+	push dx
+	push di
+
+	push cx; temporarily save CL (number of sectors to read)
+	call lba_to_chs; compute CHS
+	pop  ax; AL = number of sectors to read
+
+	mov ah, 02h
+	mov di, 3; retry count
+
+.retry:
+	pusha ; save all registers, we don't know what bios modifies
+	stc   ; set carry flag, some BIOS'es don't set it
+	int   13h; carry flag cleared = success
+	jnc   .done; jump if carry not set
+
+	;  read failed
+	popa
+	;; call disk_reset
+
+	dec  di
+	test di, di
+	jnz  .retry
+
+.fail:
+	mov bx, disk_error
+	;   all attempts are exhausted
+	jmp hlt
+
+.done:
+	popa
+
+	pop di
+	pop dx
+	pop cx
+	pop bx
+	pop ax; restore registers modified
+	ret
 
 puthex:
 	push ebx
@@ -233,7 +263,7 @@ data db "data ", 0
 size    db "size: ", 0
 loc     db "location ", 0
 disk_error db "Disk Error", 0
-not_found  db "Not Found", 0
+not_found  db "Not Found Kernel", 0
 kernel  db "kernel     "
 times   510-($-$$) db 0
 dw      0aa55h
