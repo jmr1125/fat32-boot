@@ -1,6 +1,3 @@
 vol:DGNOS
-file:/kernel/10
-lname:/abcdefghijklmnopqrstuvwxyzdir/abcdef~1
-lname:/abcdef~1/aaaaaaaaaa/aaaaaa~1
-real:test.txt
-file:/abcdef~1/aaaaaa~1/24
+real:kernel
+file:/kernel/8192

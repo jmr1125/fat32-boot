@@ -105,14 +105,40 @@ main:
 	jmp .loop1
 
 	.end1:
-	
+	;; 
 	mov  bx, not_found
 	call puts
 	jmp hlt
 	.end2:
 	mov  bx, not_found+4
 	call puts
+	mov WORD [kernel_pointer],kernel_code
 	mov bx, [si+0x14]
+	shl bx, 16
+	mov bx, [si+0x1a]
+
+
+	.read_kernel:
+	shl bx, 5
+	push bx
+	mov cl, [BPB_SecPerClus]
+	mov dl, [DrvNum]
+	mov bx, [kernel_pointer]
+	call disk_read
+	mov ax, [BPB_SecPerClus]
+	mul WORD [BPB_BytsPerSec]
+	add [kernel_pointer], ax
+	pop bx
+	mov eax,[buf_fat+bx]
+	shr bx, 5
+	and eax, 0x0fffffff
+	cmp eax, 0xFFFFFF8
+	jg .end3
+	mov bx,ax
+	
+	jmp .read_kernel
+.end3:	
+	jmp kernel
 hlt:
 	hlt
 	jmp hlt
@@ -258,9 +284,6 @@ puts:
 
 endl db 0xd, 0xa, 0
 
-data db "data ", 0
-size    db "size: ", 0
-loc     db "location ", 0
 disk_error db "Disk Error", 0
 not_found  db "Not Found Kernel", 0
 kernel  db "kernel     "
@@ -275,6 +298,5 @@ fat_loc dw ?  ; ATTENTION: in SECTOR
 data_loc dw ?  ; ATTENTION: in SECTOR
 buf_fat resb 512
 buf_data resb 512
-
-list times 512 dd ?
-list_i dd ?
+kernel_pointer:	resb	4
+kernel_code:
