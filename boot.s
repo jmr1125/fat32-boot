@@ -98,7 +98,6 @@ main:
 	cmp      si, 11
 	jl       .cmp
 	;;       found
-	mov      ax, si
 	jmp      .end2
 
 .break:
@@ -113,7 +112,7 @@ main:
 	.end2:
 	mov  bx, not_found+4
 	call puts
-
+	mov bx, [si+0x14]
 hlt:
 	hlt
 	jmp hlt

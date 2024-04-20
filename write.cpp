@@ -69,6 +69,7 @@ struct file_node {
   virtual vector<FileEntry> get_fe(string name, string ext,
                                    int grand_parent_cluster,
                                    int parent_cluster) = 0;
+  virtual void fill_file(ostream &, QWORD base) = 0;
 };
 struct LFN : public file_node {
   vector<LongFileName> Names;
@@ -141,6 +142,7 @@ struct LFN : public file_node {
     }
   }
   virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual void fill_file(ostream &, QWORD) override {}
   virtual vector<FileEntry> get_fe(string, string, int, int) override {
     vector<FileEntry> res;
     for (auto &n : Names) {
@@ -159,6 +161,7 @@ struct volume : public file_node {
   virtual void alloc_cluster() override { return; }
   virtual void generate_fat() override { return; }
   virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual void fill_file(ostream &, QWORD) override {}
   virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {
     ShortFileName fe;
     for (int i = 0; i < 8; ++i) {
@@ -204,6 +207,21 @@ struct file : public file_node {
     fat.at(clusters.back()) = 0xfffffff8;
   }
   virtual void generate_fileentry(ostream &, QWORD, QWORD) override { return; }
+  virtual void fill_file(ostream &o, QWORD base) override {
+    ifstream f(real_file, ios::in | ios::binary);
+    if (!f) {
+      cout << "File " << real_file << " not found\n";
+      return;
+    } else {
+      cout << real_file << endl;
+    }
+    for (auto &i : clusters) {
+      o.seekp(base + (i - 2) * BytesPerSec * SecPerClus);
+      char buf[BytesPerSec * SecPerClus];
+      f.read(buf, BytesPerSec * SecPerClus);
+      o.write(buf, BytesPerSec * SecPerClus);
+    }
+  }
   virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {
     ShortFileName fe;
     for (int j = 0; j < 8; ++j) {
@@ -218,9 +236,10 @@ struct file : public file_node {
       else
         fe.Extention[j] = ' ';
     }
-    fe.Attr = (BYTE)0x0;
+    fe.Attr = (BYTE)0x20;
     fe.ClsH16 = clusters[0] >> 16;
     fe.ClsL16 = clusters[0] & 0xffff;
+    fe.FileLen = size;
     return {FileEntry{.a = fe}};
   }
 };
@@ -232,6 +251,11 @@ struct directory : public file_node {
     }
   }
   virtual int Entrysize() override { return FileEntrySize; }
+  virtual void fill_file(ostream &o, QWORD base) override {
+    for (auto &i : files) {
+      i.second->fill_file(o, base);
+    }
+  }
   virtual void print(int x = 0) override {
     cout << string(x, ' ') << "Clusters: ";
     for (auto &i : clusters) {
@@ -381,6 +405,7 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
   fstream f("touch.txt", ios::in);
   directory root;
   string line;
+  string realname;
   while (getline(f, line)) {
     string l = line.substr(0, line.find(":"));
     string r = line.substr(line.find(":") + 1);
@@ -396,6 +421,9 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
         d = dynamic_cast<directory *>(d->files[i]);
       }
     }
+    if (l == "real") {
+      realname = r;
+    }
     if (l == "file") {
       auto d = &root;
       auto x = split(r);
@@ -407,6 +435,7 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
         d = dynamic_cast<directory *>(d->files[i]);
       }
       d->files[x[x.size() - 2]] = new file(stoi(x[x.size() - 1]));
+      dynamic_cast<file *>(d->files[x[x.size() - 2]])->real_file = realname;
     }
     if (l == "lname") {
       auto d = &root;
@@ -507,6 +536,10 @@ int main() { // run $ dd if=/dev/zero of=res.img bs=8192 count=8192
                               bootsec.BPB_NumFATs * bootsec.BPB_FATSz32 *
                                   bootsec.BPB_BytsPerSec,
                           0);
+  cout << "File entries finish!" << endl;
+  root.fill_file(output, bootsec.BPB_BytsPerSec * bootsec.BPB_RsvdSecCnt +
+                             bootsec.BPB_NumFATs * bootsec.BPB_FATSz32 *
+                                 bootsec.BPB_BytsPerSec);
   output.close();
   cout << "Finish!" << endl;
   cout << "Sec Per Tracks (STP): " << dec << bootsec.BPB_SecPerTrk << endl;
