@@ -24,8 +24,8 @@ puthex:
 	add eax, 'A'-10
 
 .print:
-	mov  [es:di], al
-	dec  di
+	mov  [es:bx], al
+	dec  bx
 	shr  ebx, 4
 	or   ebx, ebx
 	jnz  .loop
@@ -42,10 +42,10 @@ puts:
 	mov ah, 0x0e; put string in: bx
 
 .loop:
-	mov al, [ds:bx]
+	mov al, [ds:ebx]
 	or  al, al
 	jz  .done
-	inc bx
+	inc ebx
 	int 10h
 	jnz .loop
 
