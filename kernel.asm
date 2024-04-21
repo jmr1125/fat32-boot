@@ -43,7 +43,7 @@ cmp     ah,0
 	jmp hlt
 
 	%include "basic.asm"
-	[bits 32]
+	bits 32
 protect:
 	mov ax, 0x10
 	mov ds, ax
@@ -82,15 +82,3 @@ gdt_data:
 gdt_ptr:
 	dw gdt_data.end - gdt_data -1
 	dd gdt_data
-
-	section .bss
-	align 4096
-page_table_l4:
-	resb 4096
-page_table_l3:
-	resb 4096
-page_table_l2:
-	resb 4096 * 4
-stack_bottom:
-	resb 4096 *4
-stack_top:
