@@ -4,9 +4,13 @@ readfat: read.cpp fat32.hpp makefile
 	clang++ read.cpp $(CXXFLAGS) -g -o readfat
 writefat: write.cpp fat32.hpp makefile
 	clang++ write.cpp $(CXXFLAGS) -g -o writefat
-boot: boot.s
+boot: boot.s basic.asm writefat
+	./writefat --generate-header
+	cat res.img.inc
 	nasm -fbin boot.s -o boot
-res.img: boot writefat touch.txt
+kernel: kernel.asm
+	nasm kernel.asm -fbin -o kernel
+res.img: boot writefat touch.txt kernel
 	./writefat
 touch.txt: makefile
 	echo vol:DGNOS > touch.txt

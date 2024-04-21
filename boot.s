@@ -45,41 +45,18 @@ main:
 	mov sp, 0x7c00
 	mov BYTE [DrvNum], dl
 
-	mov ax, [BPB_RsvdSecCnt]
-	mov [fat_loc], ax
-	mov bx, [fat_loc]
-
-	mov eax, [BPB_FATSz32]
-	mul DWORD [BPB_NumFATs]
-	mov ebx, eax
-
-	mov eax, [BPB_RootEntCnt]
-	mov ecx, 32
-	mul ecx
-	add eax, [BPB_BytsPerSec]
-	dec eax
-	div DWORD [BPB_BytsPerSec]
-
-	add eax, ebx
-	add eax, [BPB_RsvdSecCnt]
-
-	mov [data_loc], eax
-
-	xor  eax, eax
 	mov  ax, [fat_loc]
 	mov  cl, 1
 	mov  dl, [DrvNum]
 	mov  bx, buf_fat
 	call disk_read
 
-	xor  eax, eax
 	mov  ax, [data_loc]
 	mov  cl, 1
 	mov  dl, [DrvNum]
 	mov  bx, buf_data
 	call disk_read
 
-	xor edx, edx
 	mov bx, buf_data
 
 .loop1:
@@ -98,6 +75,7 @@ main:
 	cmp      si, 11
 	jl       .cmp
 	;;       found
+	mov si,bx
 	jmp      .end2
 
 .break:
@@ -113,14 +91,21 @@ main:
 	mov  bx, not_found+4
 	call puts
 	mov WORD [kernel_pointer],kernel_code
+	xor ebx, ebx
 	mov bx, [si+0x14]
-	shl bx, 16
+	shl ebx, 16
 	mov bx, [si+0x1a]
 
 
 	.read_kernel:
-	shl bx, 5
+	;; bx - cluster to read
 	push bx
+
+	sub bx, 2
+	mov ax, bx
+	mul BYTE [BPB_SecPerClus]
+	add ax,[data_loc]
+
 	mov cl, [BPB_SecPerClus]
 	mov dl, [DrvNum]
 	mov bx, [kernel_pointer]
@@ -128,20 +113,30 @@ main:
 	mov ax, [BPB_SecPerClus]
 	mul WORD [BPB_BytsPerSec]
 	add [kernel_pointer], ax
+
 	pop bx
+
+	push bx
+	shl bx, 2
 	mov eax,[buf_fat+bx]
-	shr bx, 5
+	pop bx
+
 	and eax, 0x0fffffff
 	cmp eax, 0xFFFFFF8
-	jg .end3
+	jge .end3
 	mov bx,ax
 	
 	jmp .read_kernel
-.end3:	
-	jmp kernel
+
+	.end3:
+	;; mov ax, es
+	;; shl ax, 4
+	;; add ax, kernel_code
+	jmp kernel_code
 hlt:
 	hlt
 	jmp hlt
+
 	; Compile using NASM compiler (Again look for it using a search engine)
 	; Input: ax - LBA value
 	; Output: ax - Sector
@@ -229,60 +224,9 @@ disk_read:
 	pop ax; restore registers modified
 	ret
 
-puthex:
-	push ebx
-	mov  di, HexBuf
-	mov  cx, 8
-	mov  al, '0'
-	rep  stosb
-	mov  BYTE [HexBuf+8], 0
-	lea  di, [HexBuf+7]
-	pop  ebx
+%include "basic.asm"
 
-.loop:
-	mov eax, ebx; put bx in hex  low ---- high
-	and eax, 0fh
-	cmp eax, 9
-	jle .num
-	jg  .alpha
-
-.num:
-	add eax, '0'
-	jmp .print
-
-.alpha:
-	add eax, 'A'-10
-
-.print:
-	mov  [es:di], al
-	dec  di
-	shr  ebx, 4
-	or   ebx, ebx
-	jnz  .loop
-	mov  bx, HexBuf
-	call puts
-	ret
-
-putc:
-	mov ah, 0x0e; put char in: al
-	int 10h
-	ret
-
-puts:
-	mov ah, 0x0e; put string in: bx
-
-.loop:
-	mov al, [ds:bx]
-	or  al, al
-	jz  .done
-	inc bx
-	int 10h
-	jnz .loop
-
-.done:
-	ret
-
-endl db 0xd, 0xa, 0
+%include "res.img.inc"
 
 disk_error db "Disk Error", 0
 not_found  db "Not Found Kernel", 0
@@ -291,12 +235,10 @@ times   510-($-$$) db 0
 dw      0aa55h
 section .bss
 
-HexBuf resb   8
 db     ?
 DrvNum db ?
-fat_loc dw ?  ; ATTENTION: in SECTOR
-data_loc dw ?  ; ATTENTION: in SECTOR
 buf_fat resb 512
 buf_data resb 512
 kernel_pointer:	resb	4
+align 16
 kernel_code:
