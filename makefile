@@ -18,5 +18,7 @@ touch.txt: makefile
 	echo file:/kernel/`stat -f %z kernel` >> touch.txt
 	echo ---touch.txt:
 	cat touch.txt
+test-gdt:
+	nasm gdt.asm -fbin -o res.img
 check-syntax:
 	clang++ -fsyntax-only $(CXXFLAGS) read.cpp write.cpp fat32.hpp

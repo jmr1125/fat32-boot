@@ -1,0 +1,49 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  kernel.asm
+Output file:  kernel
+
+-- Program origin -------------------------------------------------------------
+
+00007C00
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+            7C00              7C00              7CCE  000000CE  progbits  .text
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                  CE
+start:                 7C00
+align:     not defined
+follows:   not defined
+vstart:                7C00
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+            7C00              7C00  begin
+            7C03              7C03  get_addr
+            7C32              7C32  entry_point
+            7C34              7C34  start
+            7C4D              7C4D  clear_pipe
+            7C7F              7C7F  hang
+            7C81              7C81  protected_mode_string
+            7CAF              7CAF  protected_mode_string.end
+            7CB0              7CB0  gdt
+            7CB0              7CB0  gdt_null
+            7CB8              7CB8  gdt_code
+            7CC0              7CC0  gdt_data
+            7CC8              7CC8  gdt_end
+            7CC8              7CC8  gdt_desc
+            7CCE              7CCE  end
+
