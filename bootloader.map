@@ -1,0 +1,137 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  bootloader.asm
+Output file:  bootloader
+
+-- Program origin -------------------------------------------------------------
+
+00007C00
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+            7C00              7C00              7E66  00000266  progbits  .text
+            7E68              7E68              7EC6  0000005E  progbits  .data
+            7EC8              7EC8              84CF  00000607  nobits    .bss
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 266
+start:                 7C00
+align:     not defined
+follows:   not defined
+vstart:                7C00
+valign:    not defined
+vfollows:  not defined
+
+---- Section .data ------------------------------------------------------------
+
+class:     progbits
+length:                  5E
+start:                 7E68
+align:                    4
+follows:   not defined
+vstart:                7E68
+valign:    not defined
+vfollows:  not defined
+
+---- Section .bss -------------------------------------------------------------
+
+class:     nobits
+length:                 607
+start:                 7EC8
+align:     not defined
+follows:   not defined
+vstart:                7EC8
+valign:                   4
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+            7C00              7C00  begin
+            7C03              7C03  get_addr
+            7C29              7C29  start
+            7C46              7C46  clear_pipe
+            7C6C              7C6C  calculate_offset
+            7C7D              7C7D  _putc
+            7C83              7C83  _puts
+            7C95              7C95  _puts.done
+            7C96              7C96  _puthex
+            7CB1              7CB1  _puthex.loop
+            7CBB              7CBB  _puthex.digit
+            7CBF              7CBF  _puthex.alpha
+            7CC1              7CC1  _puthex.ok
+            7CD3              7CD3  putc
+            7CDE              7CDE  puts
+            7CE9              7CE9  puthex
+            7D00              7D00  read
+            7D48              7D48  read.wait
+            7D63              7D63  wait100ns
+            7D71              7D71  lba2chs
+            7D97              7D97  fat_loc
+            7D99              7D99  data_loc
+            7D9B              7D9B  main
+            7E64              7E64  hang
+
+---- Section .data ------------------------------------------------------------
+
+Real              Virtual           Name
+            7E68              7E68  ..@5.string
+            7E6F              7E6F  ..@10.string
+            7E7D              7E7D  ..@15.string
+            7E8C              7E8C  drive
+            7E8D              7E8D  entry_point
+            7E8F              7E8F  protected_mode_string
+            7EA7              7EA7  protected_mode_string.end
+            7EA8              7EA8  gdt
+            7EA8              7EA8  gdt_null
+            7EB0              7EB0  gdt_code
+            7EB8              7EB8  gdt_data
+            7EC0              7EC0  gdt_end
+            7EC0              7EC0  gdt_desc
+            7EC6              7EC6  end
+
+---- Section .bss -------------------------------------------------------------
+
+Real              Virtual           Name
+            7EC8              7EC8  hexbuf
+            7ED1              7ED1  bootsect
+            7ED1              7ED1  bootsect.jmpcmd
+            7ED4              7ED4  bootsect.BS_OEMNAME
+            7EDC              7EDC  bootsect.BPB_BytsPerSec
+            7EDE              7EDE  bootsect.BPB_SecPerClus
+            7EDF              7EDF  bootsect.BPB_RsvdSecCnt
+            7EE1              7EE1  bootsect.BPB_NumFATs
+            7EE2              7EE2  bootsect.BPB_RootEntCnt
+            7EE4              7EE4  bootsect.BPB_TotSec16
+            7EE6              7EE6  bootsect.BPB_Media
+            7EE7              7EE7  bootsect.BPB_FATSz16
+            7EE9              7EE9  bootsect.BPB_SecPerTrk
+            7EEB              7EEB  bootsect.BPB_NumHeads
+            7EED              7EED  bootsect.BPB_HiddSec
+            7EF1              7EF1  bootsect.BPB_TotSec32
+            7EF5              7EF5  bootsect.BPB_FATSz32
+            7EF9              7EF9  bootsect.BPB_ExtFlags
+            7EFB              7EFB  bootsect.BPB_FSVer
+            7EFD              7EFD  bootsect.BPB_RootClus
+            7F01              7F01  bootsect.BPB_FSInfo
+            7F03              7F03  bootsect.BPB_BkBootSec
+            7F05              7F05  bootsect.BPB_Reserved
+            7F11              7F11  bootsect.BS_DrvNum
+            7F12              7F12  bootsect.BS_Reserved
+            7F13              7F13  bootsect.BS_BootSig
+            7F14              7F14  bootsect.BS_VolID
+            7F18              7F18  bootsect.BS_VolLab
+            7F23              7F23  bootsect.BS_FilSysType
+            7F2B              7F2B  bootsect.BS_BootCode32
+            80CF              80CF  buffer
+            80CF              80CF  buffer.fat
+            82CF              82CF  buffer.data
+

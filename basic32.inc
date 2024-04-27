@@ -1,0 +1,100 @@
+	;; cx - x
+	;; bx - y
+	;; ebx - offset
+
+calculate_offset:
+	imul ecx, ecx, 80*2
+	shl  ebx, 1
+	add  ebx, ecx
+	add  ebx, 0xb8000
+	ret
+	;;  ebx - offset
+	;;  al - char
+	;;  ah - attr
+_putc:
+	mov [ebx], al
+	mov [1+ebx], ah
+	ret
+	;;  esi - string
+	;;  ebx - offset
+	;;  ah - attr
+_puts:
+	mov al, [esi]
+	or  al, al
+	jz  .done
+	mov [ebx], al
+	mov [ebx+1], ah
+	add bx, 2
+	inc esi
+	jmp _puts
+
+.done:
+	ret
+	;;  edx - integer
+	;;  bx - offset
+	_puthex:pusha
+	mov ecx, 8
+	mov al, '0'
+	mov di, hexbuf
+	rep stosb
+	mov BYTE[hexbuf+8], 0
+	popa
+	pusha
+	mov di, 7
+
+.loop:
+	mov al, dl
+	and al, 0xf
+	cmp al, 10
+	jl  .digit
+	jg  .alpha
+
+.digit:
+	add al, '0'
+	jmp .ok
+
+.alpha:
+	add al, 'A'-10
+
+.ok:
+	mov [hexbuf+di], al
+	shr edx, 4
+	dec di
+	cmp di, 0
+	jge .loop
+	popa
+	ret
+
+putc:
+	call calculate_offset
+	call _putc
+	ret
+
+puts:
+	call calculate_offset
+	call _puts
+	ret
+
+puthex:
+	call calculate_offset
+	pusha
+	call _puthex
+	popa
+	mov  esi, hexbuf
+	call _puts
+	ret
+
+	%macro move 2
+	mov ecx, %1
+	mov ebx, %2
+	%endmacro
+
+	%macro print 4
+	section .data
+	%%string db %4, 0
+	section .text
+	move %1, %2
+	mov ah,%3
+	mov  esi, %%string
+	call puts
+	%endmacro

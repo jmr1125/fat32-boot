@@ -1,4 +1,3 @@
-
 puthex:
 	push ebx
 	mov  di, HexBuf
@@ -33,6 +32,7 @@ puthex:
 	call puts
 	ret
 HexBuf times 8 db 0
+
 putc:
 	mov ah, 0x0e; put char in: al
 	int 10h

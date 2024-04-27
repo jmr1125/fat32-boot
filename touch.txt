@@ -1,3 +1,3 @@
 vol:DGNOS
-real:kernel
-file:/kernel/122
+real:bootloader
+file:/boload/710

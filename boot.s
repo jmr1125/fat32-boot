@@ -33,7 +33,7 @@ BPB_Reserved:
 BS_VolLab:
 	times 11 db 0; off=0x47
 	BS_FilSysType: db 'FAT32', 0, 0, 0 ; off=0x52
-
+global main
 code:
 	bits 16
 
@@ -132,6 +132,7 @@ main:
 	;; mov ax, es
 	;; shl ax, 4
 	;; add ax, kernel_code
+	mov BYTE dl, [DrvNum]
 	jmp kernel_code
 hlt:
 	hlt
@@ -229,8 +230,8 @@ disk_read:
 %include "res.img.inc"
 
 disk_error db "Disk Error", 0
-not_found  db "Not Found Kernel", 0
-kernel  db "kernel     "
+not_found  db "Not Found Bootloader", 0
+kernel  db "boload     "
 times   510-($-$$) db 0
 dw      0aa55h
 section .bss
@@ -240,5 +241,4 @@ DrvNum db ?
 buf_fat resb 512
 buf_data resb 512
 kernel_pointer:	resb	4
-align 16
 kernel_code:
