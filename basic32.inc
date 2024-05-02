@@ -8,16 +8,18 @@ calculate_offset:
 	add  ebx, ecx
 	add  ebx, 0xb8000
 	ret
-	;;  ebx - offset
-	;;  al - char
-	;;  ah - attr
+	;; ebx - offset
+	;; al - char
+	;; ah - attr
+
 _putc:
 	mov [ebx], al
 	mov [1+ebx], ah
 	ret
-	;;  esi - string
-	;;  ebx - offset
-	;;  ah - attr
+	;; esi - string
+	;; ebx - offset
+	;; ah - attr
+
 _puts:
 	mov al, [esi]
 	or  al, al
@@ -32,7 +34,8 @@ _puts:
 	ret
 	;;  edx - integer
 	;;  bx - offset
-	_puthex:pusha
+_puthex:
+	pusha
 	mov ecx, 8
 	mov al, '0'
 	mov di, hexbuf
@@ -83,18 +86,26 @@ puthex:
 	mov  esi, hexbuf
 	call _puts
 	ret
+;; eax - lines
+flip:
+mov edi, 0xb8000
+mov ecx, 80*2
+mul ecx
+lea esi, [eax+edi]
+mov ecx, 80*2*25
+rep movsb
 
-	%macro move 2
-	mov ecx, %1
-	mov ebx, %2
-	%endmacro
+%macro scr_move 2
+mov    ecx, %1
+mov    ebx, %2
+%endmacro
 
-	%macro print 4
-	section .data
-	%%string db %4, 0
-	section .text
-	move %1, %2
-	mov ah,%3
-	mov  esi, %%string
-	call puts
-	%endmacro
+%macro   print 4
+section  .data
+%%string db %4, 0
+section  .text
+scr_move %1, %2
+mov      ah, %3
+mov      esi, %%string
+call     puts
+%endmacro

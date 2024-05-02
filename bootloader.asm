@@ -61,45 +61,132 @@ clear_pipe:
 %include "basic32.inc"
 %include "disk.inc"
 %include "res.img.inc"
-
+%include "config.inc"
 
 main:
 	mov  esi, protected_mode_string
-	mov  ecx, 0
+	mov  ecx, 24
 	mov  ebx, 0
 	mov  ah, 0x0f
 	call puts
+	mov  eax, 1
+	call flip
 
-	print 1,1,0x0f,"drive:"
-	move 1,8
-	mov  edx, [drive]
-	and  edx, 0xff
-	call puthex
+	print 24, 1, 0x0f, "drive:"
+	scr_move 24,8
+	mov   edx, [drive]
+	and   edx, 0xff
+	call  puthex
+	mov   eax, 1
+	call  flip
 
 	mov  ebx, 0x00000001
 	mov  ch, 1
 	mov  edi, bootsect
 	call read
 
-	xor edx,edx
-	print 2,1,0x0f,"fat location:"
-	move 2,14
-	mov  dx, [fat_loc]
-	call puthex	
-	print 3,1,0x0f,"data location:"
-	move 3,15
-	mov  dx, [data_loc]
-	call puthex
+	xor   edx, edx
+	print 24, 1, 0x0f, "fat location:"
+	scr_move 24,14
+	mov   dx, [fat_loc]
+	call  puthex
+	mov   eax, 1
+	call  flip
+	print 24, 1, 0x0f, "data location:"
+	scr_move 24,15
+	mov   dx, [data_loc]
+	call  puthex
+	mov   eax, 1
+	call  flip
 
-	xor ebx,ebx
-	mov bx, 0x20
+
+	%macro read_fat 1
+	xor  ebx, ebx
+	mov  bx, [fat_loc]
+	add bx, %1
+	xchg bx,bx
 	call lba2chs
-	mov ch, 1
-	mov edi, buffer.fat+8	;why
+	mov  ch, 1
+	mov  edi, buffer.fat; disk.inc:wait100ns()
 	call read
+	%endmacro
 
+	%macro read_data 1
+	xor  ebx, ebx
+	mov  bx, [data_loc]
+	add bx, %1
+	xchg bx,bx
+	call lba2chs
+	mov  ch, 1
+	mov  edi, buffer.data; disk.inc:wait100ns()
+	call read
+	%endmacro
+
+	mov  ax, 0
+	;; clear buffer
+	mov  ecx, 512
+	mov  al, 0
+	mov  edi, buffer.data
+	rep  stosb
+	mov  edi, buffer.fat
+	rep  stosb
+	.find_kernel_reread:
+	read_data ax
+	inc ax
+	mov si,0
+	.next_entry:
+	or  BYTE [buffer.data+si], 0
+	jz  .break
+	;; strcmp
+	push si
+	push di
+	mov di, kernel_name
+	lea si, [buffer.data+si]
+	rep cmpsb
+	mov al, [di]
+	pop di
+	pop si
+	cmp al, 0xff
+	push ebx
+	push si
+	je  .break_found
+	add si, 32
+	cmp si, 512
+	je  .find_kernel_reread
+	jmp .next_entry
+	.break:
+	print 24, 1, 0x0f, "kernel not found"
+	mov   eax, 1
+	call  flip
+	jmp hang
+	.break_found:
+	print 24, 1, 0x0f, "kernel found"
+	mov   eax, 1
+	call  flip
+	print 24, 1, 0x0f, "sector: data+"
+	scr_move 24,15
+	mov   edx, ebx
+	call  puthex
+	mov   eax, 1
+	call  flip
+	print 24, 1, 0x0f, "offset: 0x"
+	scr_move 24,12
+	xor   edx, edx
+	mov   dx, si
+	call  puthex
+	mov   eax, 1
+	call  flip
 hang:
-	jmp hang; Loop, self-jump
+	mov dx,0xe9
+	mov al,'h'
+	out dx,al
+	mov al,'a'
+	out dx,al
+	mov al,'l'
+	out dx,al
+	mov al,'t'
+	out dx,al
+.hang:	jmp hang.hang; Loop, self-jump
 section .data
 
 drive:
@@ -107,7 +194,7 @@ drive:
 	entry_point: dw 0
 
 protected_mode_string:
-	db '[PM] Protected Mode now', 0
+	db '[PM] Protected Mode now'
 
 .end:
 	db 0
@@ -142,11 +229,13 @@ gdt:
 	dd gdt; Address of the GDT
 
 end:
+kernel_name:	db 'KERNEL     ',0xff
 	section .bss
 
 hexbuf:
 	resb 8
 	db   ?
+
 bootsect:
 	.jmpcmd:db ?, ?, ?; off=0x0
 	.BS_OEMNAME: times 8 db ?       ; off=0x3
@@ -182,5 +271,9 @@ bootsect:
 	.BS_BootCode32: times 420 db ?
 
 buffer:
-	.fat: times 512 db ?
-	.data: times 512 db ?
+.fat:
+	times 512 db ?
+
+.data:
+	times 512 db ?
+kernel_cluster: dd ?

@@ -11,16 +11,16 @@ Output file:  bootloader
 -- Sections (summary) ---------------------------------------------------------
 
 Vstart            Start             Stop              Length    Class     Name
-            7C00              7C00              7E66  00000266  progbits  .text
-            7E68              7E68              7EC6  0000005E  progbits  .data
-            7EC8              7EC8              84CF  00000607  nobits    .bss
+            7C00              7C00              7FB9  000003B9  progbits  .text
+            7FBC              7FBC              805C  000000A0  progbits  .data
+            805C              805C              8667  0000060B  nobits    .bss
 
 -- Sections (detailed) --------------------------------------------------------
 
 ---- Section .text ------------------------------------------------------------
 
 class:     progbits
-length:                 266
+length:                 3B9
 start:                 7C00
 align:     not defined
 follows:   not defined
@@ -31,22 +31,22 @@ vfollows:  not defined
 ---- Section .data ------------------------------------------------------------
 
 class:     progbits
-length:                  5E
-start:                 7E68
+length:                  A0
+start:                 7FBC
 align:                    4
 follows:   not defined
-vstart:                7E68
+vstart:                7FBC
 valign:    not defined
 vfollows:  not defined
 
 ---- Section .bss -------------------------------------------------------------
 
 class:     nobits
-length:                 607
-start:                 7EC8
+length:                 60B
+start:                 805C
 align:     not defined
 follows:   not defined
-vstart:                7EC8
+vstart:                805C
 valign:                   4
 vfollows:  not defined
 
@@ -71,67 +71,79 @@ Real              Virtual           Name
             7CD3              7CD3  putc
             7CDE              7CDE  puts
             7CE9              7CE9  puthex
-            7D00              7D00  read
-            7D48              7D48  read.wait
-            7D63              7D63  wait100ns
-            7D71              7D71  lba2chs
-            7D97              7D97  fat_loc
-            7D99              7D99  data_loc
-            7D9B              7D9B  main
-            7E64              7E64  hang
+            7D00              7D00  flip
+            7D16              7D16  read
+            7D5E              7D5E  read.wait
+            7D79              7D79  wait100ns
+            7D7A              7D7A  lba2chs
+            7DAD              7DAD  fat_loc
+            7DAF              7DAF  data_loc
+            7DB1              7DB1  main
+            7EA4              7EA4  main.find_kernel_reread
+            7ECA              7ECA  main.next_entry
+            7EFD              7EFD  main.break
+            7F22              7F22  main.break_found
+            7FA7              7FA7  hang
+            7FB7              7FB7  hang.hang
 
 ---- Section .data ------------------------------------------------------------
 
 Real              Virtual           Name
-            7E68              7E68  ..@5.string
-            7E6F              7E6F  ..@10.string
-            7E7D              7E7D  ..@15.string
-            7E8C              7E8C  drive
-            7E8D              7E8D  entry_point
-            7E8F              7E8F  protected_mode_string
-            7EA7              7EA7  protected_mode_string.end
-            7EA8              7EA8  gdt
-            7EA8              7EA8  gdt_null
-            7EB0              7EB0  gdt_code
-            7EB8              7EB8  gdt_data
-            7EC0              7EC0  gdt_end
-            7EC0              7EC0  gdt_desc
-            7EC6              7EC6  end
+            7FBC              7FBC  ..@5.string
+            7FC3              7FC3  ..@10.string
+            7FD1              7FD1  ..@15.string
+            7FE0              7FE0  ..@21.string
+            7FF1              7FF1  ..@25.string
+            7FFE              7FFE  ..@29.string
+            800C              800C  ..@34.string
+            8017              8017  drive
+            8018              8018  entry_point
+            801A              801A  protected_mode_string
+            8031              8031  protected_mode_string.end
+            8032              8032  gdt
+            8032              8032  gdt_null
+            803A              803A  gdt_code
+            8042              8042  gdt_data
+            804A              804A  gdt_end
+            804A              804A  gdt_desc
+            8050              8050  end
+            8050              8050  kernel_name
 
 ---- Section .bss -------------------------------------------------------------
 
 Real              Virtual           Name
-            7EC8              7EC8  hexbuf
-            7ED1              7ED1  bootsect
-            7ED1              7ED1  bootsect.jmpcmd
-            7ED4              7ED4  bootsect.BS_OEMNAME
-            7EDC              7EDC  bootsect.BPB_BytsPerSec
-            7EDE              7EDE  bootsect.BPB_SecPerClus
-            7EDF              7EDF  bootsect.BPB_RsvdSecCnt
-            7EE1              7EE1  bootsect.BPB_NumFATs
-            7EE2              7EE2  bootsect.BPB_RootEntCnt
-            7EE4              7EE4  bootsect.BPB_TotSec16
-            7EE6              7EE6  bootsect.BPB_Media
-            7EE7              7EE7  bootsect.BPB_FATSz16
-            7EE9              7EE9  bootsect.BPB_SecPerTrk
-            7EEB              7EEB  bootsect.BPB_NumHeads
-            7EED              7EED  bootsect.BPB_HiddSec
-            7EF1              7EF1  bootsect.BPB_TotSec32
-            7EF5              7EF5  bootsect.BPB_FATSz32
-            7EF9              7EF9  bootsect.BPB_ExtFlags
-            7EFB              7EFB  bootsect.BPB_FSVer
-            7EFD              7EFD  bootsect.BPB_RootClus
-            7F01              7F01  bootsect.BPB_FSInfo
-            7F03              7F03  bootsect.BPB_BkBootSec
-            7F05              7F05  bootsect.BPB_Reserved
-            7F11              7F11  bootsect.BS_DrvNum
-            7F12              7F12  bootsect.BS_Reserved
-            7F13              7F13  bootsect.BS_BootSig
-            7F14              7F14  bootsect.BS_VolID
-            7F18              7F18  bootsect.BS_VolLab
-            7F23              7F23  bootsect.BS_FilSysType
-            7F2B              7F2B  bootsect.BS_BootCode32
-            80CF              80CF  buffer
-            80CF              80CF  buffer.fat
-            82CF              82CF  buffer.data
+            805C              805C  hexbuf
+            8065              8065  bootsect
+            8065              8065  bootsect.jmpcmd
+            8068              8068  bootsect.BS_OEMNAME
+            8070              8070  bootsect.BPB_BytsPerSec
+            8072              8072  bootsect.BPB_SecPerClus
+            8073              8073  bootsect.BPB_RsvdSecCnt
+            8075              8075  bootsect.BPB_NumFATs
+            8076              8076  bootsect.BPB_RootEntCnt
+            8078              8078  bootsect.BPB_TotSec16
+            807A              807A  bootsect.BPB_Media
+            807B              807B  bootsect.BPB_FATSz16
+            807D              807D  bootsect.BPB_SecPerTrk
+            807F              807F  bootsect.BPB_NumHeads
+            8081              8081  bootsect.BPB_HiddSec
+            8085              8085  bootsect.BPB_TotSec32
+            8089              8089  bootsect.BPB_FATSz32
+            808D              808D  bootsect.BPB_ExtFlags
+            808F              808F  bootsect.BPB_FSVer
+            8091              8091  bootsect.BPB_RootClus
+            8095              8095  bootsect.BPB_FSInfo
+            8097              8097  bootsect.BPB_BkBootSec
+            8099              8099  bootsect.BPB_Reserved
+            80A5              80A5  bootsect.BS_DrvNum
+            80A6              80A6  bootsect.BS_Reserved
+            80A7              80A7  bootsect.BS_BootSig
+            80A8              80A8  bootsect.BS_VolID
+            80AC              80AC  bootsect.BS_VolLab
+            80B7              80B7  bootsect.BS_FilSysType
+            80BF              80BF  bootsect.BS_BootCode32
+            8263              8263  buffer
+            8263              8263  buffer.fat
+            8463              8463  buffer.data
+            8663              8663  kernel_cluster
 
