@@ -1,8 +1,14 @@
-org     0x7c00
-[map    all bootloader.map]
+%ifidn __?OUTPUT_FORMAT?__,bin
+	org     0x7c00
+	[map    all bootloader.map]
+%endif
 section .text
 global  start
 global  main
+
+%ifdef   DEBUG
+%warning "DEBUG IS ON"
+%endif
 
 begin:
 	bits 16
@@ -12,13 +18,14 @@ get_addr:
 	pop eax
 	sub eax, 3
 	mov [entry_point], ax
+	xor ebx, ebx
 	mov bx, [entry_point]
 	;;  copy self to 0x0000:0x7c00
 	mov ax, 0
 	mov es, ax
 	mov ds, ax
-	mov si, bx
-	mov di, 0x7c00
+	mov esi, ebx
+	mov edi, 0x7c00
 	mov ecx, end - begin
 	rep movsb
 	jmp 0x0:0x7c00+start-begin; jmp to start of 0x7c00
@@ -51,6 +58,7 @@ clear_pipe:
 	mov fs, ax; Move a valid data segment into the fs register
 	mov gs, ax; Move a valid data segment into the gs register
 	mov esp, 090000h; Move the stack pointer to 090000h
+	mov ebp, 090000h; Move the base pointer to 090000h
 
 	;;  clear the screen
 	mov edi, 0xb8000
@@ -64,134 +72,199 @@ clear_pipe:
 %include "config.inc"
 
 main:
+	trap
 	mov  esi, protected_mode_string
-	mov  ecx, 24
+	mov  ecx, 23
 	mov  ebx, 0
 	mov  ah, 0x0f
 	call puts
 	mov  eax, 1
 	call flip
 
-	print 24, 1, 0x0f, "drive:"
-	scr_move 24,8
+	print 23, 1, 0x0f, "drive:"
+	scr_move 23,8
 	mov   edx, [drive]
 	and   edx, 0xff
 	call  puthex
 	mov   eax, 1
 	call  flip
 
-	mov  ebx, 0x00000001
-	mov  ch, 1
-	mov  edi, bootsect
-	call read
-
 	xor   edx, edx
-	print 24, 1, 0x0f, "fat location:"
-	scr_move 24,14
+	print 23, 1, 0x0f, "fat location:"
+	scr_move 23,14
 	mov   dx, [fat_loc]
 	call  puthex
 	mov   eax, 1
 	call  flip
-	print 24, 1, 0x0f, "data location:"
-	scr_move 24,15
+	print 23, 1, 0x0f, "data location:"
+	scr_move 23,15
 	mov   dx, [data_loc]
 	call  puthex
 	mov   eax, 1
 	call  flip
 
-
-	%macro read_fat 1
-	xor  ebx, ebx
-	mov  bx, [fat_loc]
-	add bx, %1
-	xchg bx,bx
-	call lba2chs
-	mov  ch, 1
-	mov  edi, buffer.fat; disk.inc:wait100ns()
-	call read
-	%endmacro
-
-	%macro read_data 1
-	xor  ebx, ebx
-	mov  bx, [data_loc]
-	add bx, %1
-	xchg bx,bx
-	call lba2chs
-	mov  ch, 1
-	mov  edi, buffer.data; disk.inc:wait100ns()
-	call read
-	%endmacro
-
 	mov  ax, 0
-	;; clear buffer
+	;;   clear buffer
 	mov  ecx, 512
 	mov  al, 0
 	mov  edi, buffer.data
 	rep  stosb
 	mov  edi, buffer.fat
 	rep  stosb
-	.find_kernel_reread:
-	read_data ax
-	inc ax
-	mov si,0
-	.next_entry:
-	or  BYTE [buffer.data+si], 0
-	jz  .break
-	;; strcmp
-	push si
-	push di
-	mov di, kernel_name
-	lea si, [buffer.data+si]
-	rep cmpsb
-	mov al, [di]
-	pop di
-	pop si
-	cmp al, 0xff
-	push ebx
-	push si
-	je  .break_found
-	add si, 32
-	cmp si, 512
-	je  .find_kernel_reread
-	jmp .next_entry
-	.break:
-	print 24, 1, 0x0f, "kernel not found"
+	xor  eax, eax
+	trap
+	push WORD [data_loc]
+
+.find_kernel_reread:
+	;;   read_data
+	pop  ax
+	mov  cl, 1
+	mov  edi, buffer.data
+	push eax
+	call read
+	pop  eax
+	inc  ax
+	mov  esi, 0
+	push ax
+
+.next_entry:
+	or BYTE [buffer.data+esi], 0
+	jz .break
+
+	;;   strcmp
+	push esi
+	push edi
+	mov  edi, kernel_name
+	lea  esi, [buffer.data+esi]
+	;;   repe cmpsb; why failed
+	dec  esi
+	dec  edi
+
+.cmp:
+	;;  inc esi
+	;;  inc edi
+	cmpsb
+	je  .cmp
+	mov al, [edi-1]
+	pop edi
+	pop esi
+
+	cmp  al, 0xff
+	push esi
+	je   .break_found; found
+	pop  esi
+	add  si, 32
+	cmp  si, 512
+	je   .find_kernel_reread
+	jmp  .next_entry
+
+.break:
+	print 23, 1, 0x0f, "kernel not found"
 	mov   eax, 1
 	call  flip
-	jmp hang
-	.break_found:
-	print 24, 1, 0x0f, "kernel found"
+	jmp   hang
+
+.break_found:
+	trap
+	print 23, 1, 0x0f, "kernel found"
 	mov   eax, 1
 	call  flip
-	print 24, 1, 0x0f, "sector: data+"
-	scr_move 24,15
-	mov   edx, ebx
+
+	print 23, 1, 0x0f, "offset: 0x"
+	scr_move 23,12
+	pop   edx
+	mov   [kernel_cluster], edx
 	call  puthex
 	mov   eax, 1
 	call  flip
-	print 24, 1, 0x0f, "offset: 0x"
-	scr_move 24,12
+
+	print 23, 1, 0x0f, "sector: data+"
+	scr_move 23,15
 	xor   edx, edx
-	mov   dx, si
+	pop   dx
+	dec   dx
+	sub   dx, [data_loc]
 	call  puthex
 	mov   eax, 1
 	call  flip
+
+	mov ebx, [kernel_cluster]
+	lea ebx, [buffer.data+ebx]; kernel file entry
+	mov ax, [ebx+20]; H16 cluster
+	shl eax, 16
+	mov ax, [ebx+26]; L16 cluster
+	mov [kernel_cluster], eax
+
+	mov  eax, 0x00000000
+	mov  cl, 1
+	mov  edi, bootsect
+	call read
+	mov   edi, kernel_off
+.load_kernel:
+	;;    read data
+	mov   eax, [kernel_cluster]
+	trap
+	push  eax
+	sub   eax, 2
+	xor   ecx, ecx
+	mov   cl, [bootsect.BPB_SecPerClus]
+	mul   ecx
+	xor   ecx, ecx
+	mov cx,[data_loc]
+	add   ax, cx
+	xor   ecx, ecx
+	mov   cl, [bootsect.BPB_SecPerClus]
+	call  read
+	mov   eax, [bootsect.BPB_SecPerClus]
+	mul   DWORD [bootsect.BPB_BytsPerSec]
+	add edi, eax
+	pop   eax
+	;;    read fat
+	push  edi
+	xor   edx, edx
+	;; 512/(32/8)=128 eax = cluster containing fat32 value
+	shr   eax, 7
+	xor   ecx,ecx
+	mov cx,[fat_loc]
+	add   eax, ecx
+	mov   cl, 1
+	mov   edi, buffer.fat
+	call  read
+	pop   edi
+	print 23, 1, 0x0f, "cluster: 0x"
+	scr_move 23,12
+	mov   edx, [kernel_cluster]
+	call  puthex
+	mov   eax, 1
+	call  flip
+	mov eax, [kernel_cluster]
+	and eax, 0x3f		;mod 128
+	mov eax, [buffer.fat+eax*4]
+	mov [kernel_cluster], eax
+	and eax, 0x0fffffff
+	cmp eax, 0x0ffffff8
+	jl .load_kernel
+
+	jmp kernel_off
 hang:
-	mov dx,0xe9
-	mov al,'h'
-	out dx,al
-	mov al,'a'
-	out dx,al
-	mov al,'l'
-	out dx,al
-	mov al,'t'
-	out dx,al
-.hang:	jmp hang.hang; Loop, self-jump
+	mov dx, 0xe9
+	mov al, 'h'
+	out dx, al
+	mov al, 'a'
+	out dx, al
+	mov al, 'l'
+	out dx, al
+	mov al, 't'
+	out dx, al
+
+.hang:
+	jmp hang.hang; Loop, self-jump
 section .data
 
 drive:
-	db 0
+	db      0
 	entry_point: dw 0
+	section .rodata
 
 protected_mode_string:
 	db '[PM] Protected Mode now'
@@ -228,8 +301,10 @@ gdt:
 	dw gdt_end - gdt - 1; Limit (size)
 	dd gdt; Address of the GDT
 
+	kernel_name: db 'KERNEL      ',0xff
+
 end:
-kernel_name:	db 'KERNEL     ',0xff
+
 	section .bss
 
 hexbuf:
@@ -269,6 +344,7 @@ bootsect:
 	times 11 db ?; off=0x47
 	.BS_FilSysType: times 8 db ? ; off=0x52
 	.BS_BootCode32: times 420 db ?
+	.BS_BootSign: times 2 db ?
 
 buffer:
 .fat:
@@ -276,4 +352,5 @@ buffer:
 
 .data:
 	times 512 db ?
-kernel_cluster: dd ?
+	kernel_cluster: dd ?
+

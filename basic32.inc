@@ -32,18 +32,19 @@ _puts:
 
 .done:
 	ret
-	;;  edx - integer
-	;;  bx - offset
+	;; edx - integer
+	;; bx - offset
+
 _puthex:
 	pusha
 	mov ecx, 8
 	mov al, '0'
-	mov di, hexbuf
+	mov edi, hexbuf
 	rep stosb
 	mov BYTE[hexbuf+8], 0
 	popa
 	pusha
-	mov di, 7
+	mov edi, 7
 
 .loop:
 	mov al, dl
@@ -60,10 +61,10 @@ _puthex:
 	add al, 'A'-10
 
 .ok:
-	mov [hexbuf+di], al
+	mov [hexbuf+edi], al
 	shr edx, 4
-	dec di
-	cmp di, 0
+	dec edi
+	cmp edi, 0
 	jge .loop
 	popa
 	ret
@@ -86,26 +87,33 @@ puthex:
 	mov  esi, hexbuf
 	call _puts
 	ret
-;; eax - lines
+	;; eax - lines
+
 flip:
-mov edi, 0xb8000
-mov ecx, 80*2
-mul ecx
-lea esi, [eax+edi]
-mov ecx, 80*2*25
-rep movsb
+	mov edi, 0xb8000
+	mov ecx, 80*2
+	mul ecx
+	lea esi, [eax+edi]
+	mov ecx, 80*2*25
+	rep movsb
 
-%macro scr_move 2
-mov    ecx, %1
-mov    ebx, %2
-%endmacro
+	%macro scr_move 2
+	mov    ecx, %1
+	mov    ebx, %2
+	%endmacro
 
-%macro   print 4
-section  .data
-%%string db %4, 0
-section  .text
-scr_move %1, %2
-mov      ah, %3
-mov      esi, %%string
-call     puts
-%endmacro
+	%macro   print 4
+	section  .data
+	%%string db %4, 0
+	section  .text
+	scr_move %1, %2
+	mov      ah, %3
+	mov      esi, %%string
+	call     puts
+	%endmacro
+
+	%ifdef  DEBUG
+	%define trap xchg bx, bx
+	%else
+	%define trap
+	%endif

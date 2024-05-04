@@ -1,3 +1,7 @@
+%ifidn __?OUTPUT_FORMAT?__,bin
+	[map all boot.map]
+	org 0x7c00
+	%endif
 bootsector:
 jmpcmd:
 	db 0
@@ -38,7 +42,7 @@ code:
 	bits 16
 
 main:
-	mov ax, 0x07c0
+	mov ax, 0
 	mov ds, ax
 	mov es, ax
 	mov ss, ax

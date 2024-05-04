@@ -1,0 +1,113 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  boot.s
+Output file:  boot
+
+-- Program origin -------------------------------------------------------------
+
+00007C00
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+            7C00              7C00              7E00  00000200  progbits  .text
+            7E00              7E00              8206  00000406  nobits    .bss
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 200
+start:                 7C00
+align:     not defined
+follows:   not defined
+vstart:                7C00
+valign:    not defined
+vfollows:  not defined
+
+---- Section .bss -------------------------------------------------------------
+
+class:     nobits
+length:                 406
+start:                 7E00
+align:     not defined
+follows:   not defined
+vstart:                7E00
+valign:                   4
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+            7C00              7C00  bootsector
+            7C00              7C00  jmpcmd
+            7C03              7C03  BS_OEMNAME
+            7C0B              7C0B  BPB_BytsPerSec
+            7C0D              7C0D  BPB_SecPerClus
+            7C0E              7C0E  BPB_RsvdSecCnt
+            7C10              7C10  BPB_NumFATs
+            7C11              7C11  BPB_RootEntCnt
+            7C13              7C13  BPB_TotSec16
+            7C15              7C15  BPB_Media
+            7C16              7C16  BPB_FATSz16
+            7C18              7C18  BPB_SecPerTrk
+            7C1A              7C1A  BPB_NumHeads
+            7C1C              7C1C  BPB_HiddSec
+            7C20              7C20  BPB_TotSec32
+            7C24              7C24  BPB_FATSz32
+            7C28              7C28  BPB_ExtFlags
+            7C2A              7C2A  BPB_FSVer
+            7C2C              7C2C  BPB_RootClus
+            7C30              7C30  BPB_FSInfo
+            7C32              7C32  BPB_BkBootSec
+            7C34              7C34  BPB_Reserved
+            7C40              7C40  BS_DrvNum
+            7C41              7C41  BS_Reserved
+            7C42              7C42  BS_BootSig
+            7C43              7C43  BS_VolID
+            7C47              7C47  BS_VolLab
+            7C52              7C52  BS_FilSysType
+            7C5A              7C5A  code
+            7C5A              7C5A  main
+            7C8B              7C8B  main.loop1
+            7C92              7C92  main.cmp
+            7CA6              7CA6  main.break
+            7CAB              7CAB  main.end1
+            7CB3              7CB3  main.end2
+            7CCC              7CCC  main.read_kernel
+            7D11              7D11  main.end3
+            7D18              7D18  hlt
+            7D1B              7D1B  lba_to_chs
+            7D3A              7D3A  disk_read
+            7D49              7D49  disk_read.retry
+            7D55              7D55  disk_read.fail
+            7D5A              7D5A  disk_read.done
+            7D61              7D61  puthex
+            7D78              7D78  puthex.loop
+            7D87              7D87  puthex.num
+            7D8D              7D8D  puthex.alpha
+            7D91              7D91  puthex.print
+            7DA5              7DA5  HexBuf
+            7DAD              7DAD  putc
+            7DB2              7DB2  puts
+            7DB4              7DB4  puts.loop
+            7DC2              7DC2  puts.done
+            7DC3              7DC3  fat_loc
+            7DC5              7DC5  data_loc
+            7DC7              7DC7  disk_error
+            7DD2              7DD2  not_found
+            7DE7              7DE7  kernel
+
+---- Section .bss -------------------------------------------------------------
+
+Real              Virtual           Name
+            7E01              7E01  DrvNum
+            7E02              7E02  buf_fat
+            8002              8002  buf_data
+            8202              8202  kernel_pointer
+            8206              8206  kernel_code
+

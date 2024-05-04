@@ -213,13 +213,24 @@ struct file : public file_node {
       cout << "File " << real_file << " not found\n";
       return;
     } else {
-      cout << real_file << endl;
+      cout << real_file << " found" << endl;
     }
+    f.seekg(0, ios::end);
+    int tot_len = f.tellg();
+    cout <<dec<< "File length: " << tot_len << endl;
+    f.seekg(0, ios::beg);
     for (auto &i : clusters) {
       o.seekp(base + (i - 2) * BytesPerSec * SecPerClus);
       char buf[BytesPerSec * SecPerClus];
       f.read(buf, BytesPerSec * SecPerClus);
-      o.write(buf, BytesPerSec * SecPerClus);
+      cout << "Cluster " << i << " filled\n";
+      cout << "File length: " << tot_len << endl;
+      if (tot_len < BytesPerSec * SecPerClus) {
+        o.write(buf, tot_len);
+      } else {
+        o.write(buf, BytesPerSec * SecPerClus);
+      }
+      tot_len -= BytesPerSec * SecPerClus;
     }
   }
   virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {

@@ -9,10 +9,20 @@ boot: boot.s basic.asm writefat bootloader
 	./writefat --generate-header
 	cat res.img.inc
 	nasm -fbin boot.s -o boot -g
+#	nasm -felf32 boot.s -o boot.elf -g
 bootloader: bootloader.asm basic32.inc disk.inc makefile
-	nasm bootloader.asm -fbin -o bootloader -g
-res.img: boot writefat touch.txt bootloader
-	make touch.txt&&./writefat
+	nasm bootloader.asm -fbin -o bootloader -g # -DDEBUG
+#	nasm bootloader.asm -felf32 -o bootloader.elf -g -DDEBUG
+c_kernel.o: kernel.cpp makefile
+	clang++ --target=x86_64 -m32 -c -o c_kernel.o kernel.cpp -g
+kernel.o: kernel.asm makefile
+	nasm kernel.asm -felf32 -o kernel.o -g
+res.o: kernel.o c_kernel.o makefile
+	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld kernel.o c_kernel.o -o res.o
+res: res.o makefile
+	x86_64-elf-objcopy -O binary res.o res
+res.img: boot writefat touch.txt bootloader res makefile
+	make touch.txt&&echo === generating ===&&./writefat
 touch.txt: always
 	echo ---touch.txt:
 	cat touch.txt
@@ -30,7 +40,8 @@ always:
 	echo vol:DGNOS > touch.txt
 	echo real:bootloader >> touch.txt
 	echo file:/boload/`stat -f %z bootloader` >> touch.txt
-	echo file:/KERNEL/0 >> touch.txt
+	echo real:res >> touch.txt
+	echo file:/KERNEL/`stat -f %z res` >> touch.txt
 	echo "// generate by makefile" > config.h
 	echo "#define kernel_off $(KERNEL_OFF)" >> config.h
 	echo ";; generate by makefile" > config.inc
