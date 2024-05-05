@@ -2,4 +2,4 @@ vol:DGNOS
 real:bootloader
 file:/boload/1303
 real:res
-file:/KERNEL/344
+file:/KERNEL/5308

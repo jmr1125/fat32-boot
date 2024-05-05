@@ -13,12 +13,10 @@ boot: boot.s basic.asm writefat bootloader
 bootloader: bootloader.asm basic32.inc disk.inc makefile
 	nasm bootloader.asm -fbin -o bootloader -g # -DDEBUG
 #	nasm bootloader.asm -felf32 -o bootloader.elf -g -DDEBUG
-c_kernel.o: kernel.cpp makefile
-	clang++ --target=x86_64 -m32 -c -o c_kernel.o kernel.cpp -g
 kernel.o: kernel.asm makefile
 	nasm kernel.asm -felf32 -o kernel.o -g
-res.o: kernel.o c_kernel.o makefile
-	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld kernel.o c_kernel.o -o res.o
+res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o makefile
+	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o -o res.o
 res: res.o makefile
 	x86_64-elf-objcopy -O binary res.o res
 res.img: boot writefat touch.txt bootloader res makefile
@@ -46,3 +44,17 @@ always:
 	echo "#define kernel_off $(KERNEL_OFF)" >> config.h
 	echo ";; generate by makefile" > config.inc
 	echo "%define kernel_off $(KERNEL_OFF)" >> config.inc
+
+
+
+c_kernel.o: kernel.cpp stdio.h port.h makefile
+	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o c_kernel.o kernel.cpp
+stdio.o: stdio.cpp makefile
+	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o stdio.o stdio.cpp
+COMPILE=clang++ -std=c++17 -g --target=x86_64 -m32 -c -o 
+int.o: int.cpp int.h
+	$(COMPILE) int.o int.cpp
+ints.o: ints.asm
+	nasm -felf32 ints.asm -o ints.o -g
+ints.c.o: ints.cpp
+	$(COMPILE) ints.c.o ints.cpp

@@ -1,0 +1,1511 @@
+
+res.o:	file format elf32-i386
+
+SYMBOL TABLE:
+00000000 l    df *ABS*	00000000 kernel.asm
+0001001d l       .text	00000000 hlt
+0001001d l       .text	00000000 hlt.hlt
+00000000 l    df *ABS*	00000000 kernel.cpp
+00000000 l    df *ABS*	00000000 stdio.cpp
+00000000 l    df *ABS*	00000000 int.cpp
+00000000 l    df *ABS*	00000000 ints.asm
+00010060 g     F .text	0000001f putchar
+00010140 g     F .text	00000043 _Z11PIC_sendEOIh
+00010ac0  w    F .text._Z8out_bytesh	00000014 _Z8out_bytesh
+000109c8 g       .text	00000000 int_12
+00010932 g       .text	00000000 int_7
+000108f6 g       .text	00000000 int_5
+000103b0 g     F .text	0000006f _Z14IRQ_clear_maskh
+00010080 g     F .text	0000005b puts
+00010a04 g       .text	00000000 int_14
+00010a7c g       .text	00000000 int_18
+00010860 g       .text	00000000 int_0
+00010ae0  w    F .text._Z7in_bytes	00000019 _Z7in_bytes
+00010a9a g       .text	00000000 int_19
+000105a0 g     F .text	000002b2 _Z21initialize_interruptsv
+000108ba g       .text	00000000 int_3
+00010914 g       .text	00000000 int_6
+0001098c g       .text	00000000 int_10
+000109aa g       .text	00000000 int_11
+00010a40 g       .text	00000000 int_16
+00010000 g       .text	00000000 _start
+00010020 g     F .text	00000036 k_main
+000104b0 g     F .text	00000018 _Z11pic_get_isrv
+000100e0 g     F .text	00000052 flip
+0001089c g       .text	00000000 int_2
+000102c0 g     F .text	00000033 _Z11pic_disablev
+0001087e g       .text	00000000 int_1
+00010d8a g     O .bss	00000800 idt
+00010d84 g     O .bss	00000006 IDTR
+00010420 g     F .text	00000068 _Z17__pic_get_irq_regi
+00010300 g     F .text	000000a8 _Z12IRQ_set_maskh
+000108d8 g       .text	00000000 int_4
+00010950 g       .text	00000000 int_8
+00010b00  w    F .text._Z7io_waitv	00000021 _Z7io_waitv
+00010a22 g       .text	00000000 int_15
+000109e6 g       .text	00000000 int_13
+000104d0 g     F .text	00000020 _Z8loadIDTRv
+00010490 g     F .text	00000018 _Z11pic_get_irrv
+00010a5e g       .text	00000000 int_17
+00010190 g     F .text	00000123 _Z9PIC_remapii
+0001096e g       .text	00000000 int_9
+000104f0 g     F .text	000000a5 _Z6addIntiPFvvEj
+
+res.o:	file format elf32-i386
+
+Disassembly of section .text:
+
+00010000 <_start>:
+; _start():
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:6
+   10000: bc 00 00 01 00               	movl	$65536, %esp            # imm = 0x10000
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:7
+   10005: bd 00 00 01 00               	movl	$65536, %ebp            # imm = 0x10000
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:8
+   1000a: b9 a0 0f 00 00               	movl	$4000, %ecx             # imm = 0xFA0
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:9
+   1000f: bf 00 80 0b 00               	movl	$753664, %edi           # imm = 0xB8000
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:10
+   10014: b0 00                        	movb	$0, %al
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:11
+   10016: f3 aa                        	rep		stosb	%al, %es:(%edi)
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:12
+   10018: e8 03 00 00 00               	calll	0x10020 <k_main>
+
+0001001d <hlt.hlt>:
+; hlt.hlt():
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:14
+   1001d: f4                           	hlt
+; /Users/jiang/Desktop/fat32-boot/kernel.asm:15
+   1001e: eb fd                        	jmp	0x1001d <hlt.hlt>
+
+00010020 <k_main>:
+; k_main():
+; /Users/jiang/Desktop/fat32-boot/kernel.cpp:8
+   10020: 55                           	pushl	%ebp
+   10021: 89 e5                        	movl	%esp, %ebp
+   10023: 83 ec 0c                     	subl	$12, %esp
+; /Users/jiang/Desktop/fat32-boot/kernel.cpp:9
+   10026: e8 75 05 00 00               	calll	0x105a0 <_Z21initialize_interruptsv>
+; /Users/jiang/Desktop/fat32-boot/kernel.cpp:10
+   1002b: 8d 0d 21 0b 01 00            	leal	68385, %ecx
+   10031: b8 00 80 0b 00               	movl	$753664, %eax           # imm = 0xB8000
+   10036: 05 40 01 00 00               	addl	$320, %eax              # imm = 0x140
+   1003b: 89 0c 24                     	movl	%ecx, (%esp)
+   1003e: c7 44 24 04 0f 00 00 00      	movl	$15, 4(%esp)
+   10046: 89 44 24 08                  	movl	%eax, 8(%esp)
+   1004a: e8 31 00 00 00               	calll	0x10080 <puts>
+; /Users/jiang/Desktop/fat32-boot/kernel.cpp:11
+   1004f: cd 00                        	int	$0
+; /Users/jiang/Desktop/fat32-boot/kernel.cpp:12
+   10051: 83 c4 0c                     	addl	$12, %esp
+   10054: 5d                           	popl	%ebp
+   10055: c3                           	retl
+   10056: 66 90                        	nop
+   10058: 66 90                        	nop
+   1005a: 66 90                        	nop
+   1005c: 66 90                        	nop
+   1005e: 66 90                        	nop
+
+00010060 <putchar>:
+; putchar():
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:2
+   10060: 55                           	pushl	%ebp
+   10061: 89 e5                        	movl	%esp, %ebp
+   10063: 8b 45 10                     	movl	16(%ebp), %eax
+   10066: 8a 45 0c                     	movb	12(%ebp), %al
+   10069: 8a 45 08                     	movb	8(%ebp), %al
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:3
+   1006c: 8a 4d 08                     	movb	8(%ebp), %cl
+   1006f: 8b 45 10                     	movl	16(%ebp), %eax
+   10072: 88 08                        	movb	%cl, (%eax)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:4
+   10074: 8a 4d 0c                     	movb	12(%ebp), %cl
+   10077: 8b 45 10                     	movl	16(%ebp), %eax
+   1007a: 88 48 01                     	movb	%cl, 1(%eax)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:5
+   1007d: 5d                           	popl	%ebp
+   1007e: c3                           	retl
+   1007f: 90                           	nop
+
+00010080 <puts>:
+; puts():
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:6
+   10080: 55                           	pushl	%ebp
+   10081: 89 e5                        	movl	%esp, %ebp
+   10083: 83 ec 0c                     	subl	$12, %esp
+   10086: 8b 45 10                     	movl	16(%ebp), %eax
+   10089: 8a 45 0c                     	movb	12(%ebp), %al
+   1008c: 8b 45 08                     	movl	8(%ebp), %eax
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:7
+   1008f: 8b 45 08                     	movl	8(%ebp), %eax
+   10092: 0f be 00                     	movsbl	(%eax), %eax
+   10095: 83 f8 00                     	cmpl	$0, %eax
+   10098: 0f 84 38 00 00 00            	je	0x100d6 <puts+0x56>
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:8
+   1009e: 8b 45 08                     	movl	8(%ebp), %eax
+   100a1: 8a 10                        	movb	(%eax), %dl
+   100a3: 8a 4d 0c                     	movb	12(%ebp), %cl
+   100a6: 8b 45 10                     	movl	16(%ebp), %eax
+   100a9: 0f be d2                     	movsbl	%dl, %edx
+   100ac: 89 14 24                     	movl	%edx, (%esp)
+   100af: 0f be c9                     	movsbl	%cl, %ecx
+   100b2: 89 4c 24 04                  	movl	%ecx, 4(%esp)
+   100b6: 89 44 24 08                  	movl	%eax, 8(%esp)
+   100ba: e8 a1 ff ff ff               	calll	0x10060 <putchar>
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:9
+   100bf: 8b 45 08                     	movl	8(%ebp), %eax
+   100c2: 83 c0 01                     	addl	$1, %eax
+   100c5: 89 45 08                     	movl	%eax, 8(%ebp)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:10
+   100c8: 8b 45 10                     	movl	16(%ebp), %eax
+   100cb: 83 c0 02                     	addl	$2, %eax
+   100ce: 89 45 10                     	movl	%eax, 16(%ebp)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:7
+   100d1: e9 b9 ff ff ff               	jmp	0x1008f <puts+0xf>
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:12
+   100d6: 83 c4 0c                     	addl	$12, %esp
+   100d9: 5d                           	popl	%ebp
+   100da: c3                           	retl
+   100db: 0f 1f 44 00 00               	nopl	(%eax,%eax)
+
+000100e0 <flip>:
+; flip():
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:13
+   100e0: 55                           	pushl	%ebp
+   100e1: 89 e5                        	movl	%esp, %ebp
+   100e3: 57                           	pushl	%edi
+   100e4: 56                           	pushl	%esi
+   100e5: 8a 45 08                     	movb	8(%ebp), %al
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:17
+   100e8: 0f be 45 08                  	movsbl	8(%ebp), %eax
+   100ec: 69 f0 a0 00 00 00            	imull	$160, %eax, %esi
+   100f2: 81 c6 00 80 0b 00            	addl	$753664, %esi           # imm = 0xB8000
+   100f8: 0f be 45 08                  	movsbl	8(%ebp), %eax
+   100fc: 6b c0 50                     	imull	$80, %eax, %eax
+   100ff: c1 e0 01                     	shll	$1, %eax
+   10102: b9 80 11 00 00               	movl	$4480, %ecx             # imm = 0x1180
+   10107: 29 c1                        	subl	%eax, %ecx
+   10109: bf 00 80 0b 00               	movl	$753664, %edi           # imm = 0xB8000
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:15
+   1010e: f3 a4                        	rep		movsb	(%esi), %es:(%edi)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:19
+   10110: 0f be 45 08                  	movsbl	8(%ebp), %eax
+   10114: 69 f8 a0 00 00 00            	imull	$160, %eax, %edi
+   1011a: 81 c7 00 80 0b 00            	addl	$753664, %edi           # imm = 0xB8000
+   10120: 0f be 45 08                  	movsbl	8(%ebp), %eax
+   10124: 6b c8 50                     	imull	$80, %eax, %ecx
+   10127: c1 e1 01                     	shll	$1, %ecx
+   1012a: 31 c0                        	xorl	%eax, %eax
+   1012c: f3 aa                        	rep		stosb	%al, %es:(%edi)
+; /Users/jiang/Desktop/fat32-boot/stdio.cpp:20
+   1012e: 5e                           	popl	%esi
+   1012f: 5f                           	popl	%edi
+   10130: 5d                           	popl	%ebp
+   10131: c3                           	retl
+   10132: 66 90                        	nop
+   10134: 66 90                        	nop
+   10136: 66 90                        	nop
+   10138: 66 90                        	nop
+   1013a: 66 90                        	nop
+   1013c: 66 90                        	nop
+   1013e: 66 90                        	nop
+
+00010140 <_Z11PIC_sendEOIh>:
+; _Z11PIC_sendEOIh():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:4
+   10140: 55                           	pushl	%ebp
+   10141: 89 e5                        	movl	%esp, %ebp
+   10143: 83 ec 08                     	subl	$8, %esp
+   10146: 8a 45 08                     	movb	8(%ebp), %al
+; /Users/jiang/Desktop/fat32-boot/int.cpp:5
+   10149: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   1014d: 83 f8 08                     	cmpl	$8, %eax
+   10150: 0f 8c 14 00 00 00            	jl	0x1016a <_Z11PIC_sendEOIh+0x2a>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:6
+   10156: c7 04 24 a0 00 00 00         	movl	$160, (%esp)
+   1015d: c7 44 24 04 20 00 00 00      	movl	$32, 4(%esp)
+   10165: e8 56 09 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:8
+   1016a: c7 04 24 20 00 00 00         	movl	$32, (%esp)
+   10171: c7 44 24 04 20 00 00 00      	movl	$32, 4(%esp)
+   10179: e8 42 09 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:9
+   1017e: 83 c4 08                     	addl	$8, %esp
+   10181: 5d                           	popl	%ebp
+   10182: c3                           	retl
+   10183: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw	%cs:(%eax,%eax)
+
+00010190 <_Z9PIC_remapii>:
+; _Z9PIC_remapii():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:17
+   10190: 55                           	pushl	%ebp
+   10191: 89 e5                        	movl	%esp, %ebp
+   10193: 83 ec 0c                     	subl	$12, %esp
+   10196: 8b 45 0c                     	movl	12(%ebp), %eax
+   10199: 8b 45 08                     	movl	8(%ebp), %eax
+; /Users/jiang/Desktop/fat32-boot/int.cpp:20
+   1019c: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   101a3: e8 38 09 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   101a8: 88 45 ff                     	movb	%al, -1(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:21
+   101ab: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   101b2: e8 29 09 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   101b7: 88 45 fe                     	movb	%al, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:23
+   101ba: c7 04 24 20 00 00 00         	movl	$32, (%esp)
+   101c1: c7 44 24 04 11 00 00 00      	movl	$17, 4(%esp)
+   101c9: e8 f2 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:26
+   101ce: e8 2d 09 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:27
+   101d3: c7 04 24 a0 00 00 00         	movl	$160, (%esp)
+   101da: c7 44 24 04 11 00 00 00      	movl	$17, 4(%esp)
+   101e2: e8 d9 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:28
+   101e7: e8 14 09 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:29
+   101ec: 8b 45 08                     	movl	8(%ebp), %eax
+   101ef: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   101f6: 0f b6 c0                     	movzbl	%al, %eax
+   101f9: 89 44 24 04                  	movl	%eax, 4(%esp)
+   101fd: e8 be 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:30
+   10202: e8 f9 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:31
+   10207: 8b 45 0c                     	movl	12(%ebp), %eax
+   1020a: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   10211: 0f b6 c0                     	movzbl	%al, %eax
+   10214: 89 44 24 04                  	movl	%eax, 4(%esp)
+   10218: e8 a3 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:32
+   1021d: e8 de 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:33
+   10222: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   10229: c7 44 24 04 04 00 00 00      	movl	$4, 4(%esp)
+   10231: e8 8a 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:36
+   10236: e8 c5 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:37
+   1023b: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   10242: c7 44 24 04 02 00 00 00      	movl	$2, 4(%esp)
+   1024a: e8 71 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:38
+   1024f: e8 ac 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:40
+   10254: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   1025b: c7 44 24 04 01 00 00 00      	movl	$1, 4(%esp)
+   10263: e8 58 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:42
+   10268: e8 93 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:43
+   1026d: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   10274: c7 44 24 04 01 00 00 00      	movl	$1, 4(%esp)
+   1027c: e8 3f 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:44
+   10281: e8 7a 08 00 00               	calll	0x10b00 <_Z7io_waitv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:46
+   10286: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   1028d: 0f b6 45 ff                  	movzbl	-1(%ebp), %eax
+   10291: 89 44 24 04                  	movl	%eax, 4(%esp)
+   10295: e8 26 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:47
+   1029a: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   102a1: 0f b6 45 fe                  	movzbl	-2(%ebp), %eax
+   102a5: 89 44 24 04                  	movl	%eax, 4(%esp)
+   102a9: e8 12 08 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:48
+   102ae: 83 c4 0c                     	addl	$12, %esp
+   102b1: 5d                           	popl	%ebp
+   102b2: c3                           	retl
+   102b3: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw	%cs:(%eax,%eax)
+
+000102c0 <_Z11pic_disablev>:
+; _Z11pic_disablev():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:50
+   102c0: 55                           	pushl	%ebp
+   102c1: 89 e5                        	movl	%esp, %ebp
+   102c3: 83 ec 08                     	subl	$8, %esp
+; /Users/jiang/Desktop/fat32-boot/int.cpp:51
+   102c6: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   102cd: c7 44 24 04 ff 00 00 00      	movl	$255, 4(%esp)
+   102d5: e8 e6 07 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:52
+   102da: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   102e1: c7 44 24 04 ff 00 00 00      	movl	$255, 4(%esp)
+   102e9: e8 d2 07 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:53
+   102ee: 83 c4 08                     	addl	$8, %esp
+   102f1: 5d                           	popl	%ebp
+   102f2: c3                           	retl
+   102f3: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw	%cs:(%eax,%eax)
+
+00010300 <_Z12IRQ_set_maskh>:
+; _Z12IRQ_set_maskh():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:55
+   10300: 55                           	pushl	%ebp
+   10301: 89 e5                        	movl	%esp, %ebp
+   10303: 83 ec 0c                     	subl	$12, %esp
+   10306: 8a 45 08                     	movb	8(%ebp), %al
+; /Users/jiang/Desktop/fat32-boot/int.cpp:56
+   10309: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   1030d: 3d ff 00 00 00               	cmpl	$255, %eax
+   10312: 0f 85 2d 00 00 00            	jne	0x10345 <_Z12IRQ_set_maskh+0x45>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:57
+   10318: c7 04 24 21 00 00 00         	movl	$33, (%esp)
+   1031f: c7 44 24 04 ff 00 00 00      	movl	$255, 4(%esp)
+   10327: e8 94 07 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:58
+   1032c: c7 04 24 a1 00 00 00         	movl	$161, (%esp)
+   10333: c7 44 24 04 ff 00 00 00      	movl	$255, 4(%esp)
+   1033b: e8 80 07 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:59
+   10340: e9 5e 00 00 00               	jmp	0x103a3 <_Z12IRQ_set_maskh+0xa3>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:64
+   10345: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   10349: 83 f8 08                     	cmpl	$8, %eax
+   1034c: 0f 8d 0b 00 00 00            	jge	0x1035d <_Z12IRQ_set_maskh+0x5d>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:65
+   10352: 66 c7 45 fe 21 00            	movw	$33, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:66
+   10358: e9 10 00 00 00               	jmp	0x1036d <_Z12IRQ_set_maskh+0x6d>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:67
+   1035d: 66 c7 45 fe a1 00            	movw	$161, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:68
+   10363: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   10367: 83 e8 08                     	subl	$8, %eax
+   1036a: 88 45 08                     	movb	%al, 8(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:70
+   1036d: 0f bf 45 fe                  	movswl	-2(%ebp), %eax
+   10371: 89 04 24                     	movl	%eax, (%esp)
+   10374: e8 67 07 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   10379: 0f b6 c0                     	movzbl	%al, %eax
+   1037c: 0f b6 4d 08                  	movzbl	8(%ebp), %ecx
+   10380: ba 01 00 00 00               	movl	$1, %edx
+   10385: d3 e2                        	shll	%cl, %edx
+   10387: 89 d1                        	movl	%edx, %ecx
+   10389: 09 c8                        	orl	%ecx, %eax
+   1038b: 88 45 fd                     	movb	%al, -3(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:71
+   1038e: 66 8b 45 fe                  	movw	-2(%ebp), %ax
+   10392: 98                           	cwtl
+   10393: 89 04 24                     	movl	%eax, (%esp)
+   10396: 0f b6 45 fd                  	movzbl	-3(%ebp), %eax
+   1039a: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1039e: e8 1d 07 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:72
+   103a3: 83 c4 0c                     	addl	$12, %esp
+   103a6: 5d                           	popl	%ebp
+   103a7: c3                           	retl
+   103a8: 0f 1f 84 00 00 00 00 00      	nopl	(%eax,%eax)
+
+000103b0 <_Z14IRQ_clear_maskh>:
+; _Z14IRQ_clear_maskh():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:74
+   103b0: 55                           	pushl	%ebp
+   103b1: 89 e5                        	movl	%esp, %ebp
+   103b3: 83 ec 0c                     	subl	$12, %esp
+   103b6: 8a 45 08                     	movb	8(%ebp), %al
+; /Users/jiang/Desktop/fat32-boot/int.cpp:78
+   103b9: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   103bd: 83 f8 08                     	cmpl	$8, %eax
+   103c0: 0f 8d 0b 00 00 00            	jge	0x103d1 <_Z14IRQ_clear_maskh+0x21>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:79
+   103c6: 66 c7 45 fe 21 00            	movw	$33, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:80
+   103cc: e9 10 00 00 00               	jmp	0x103e1 <_Z14IRQ_clear_maskh+0x31>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:81
+   103d1: 66 c7 45 fe a1 00            	movw	$161, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:82
+   103d7: 0f b6 45 08                  	movzbl	8(%ebp), %eax
+   103db: 83 e8 08                     	subl	$8, %eax
+   103de: 88 45 08                     	movb	%al, 8(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:84
+   103e1: 0f bf 45 fe                  	movswl	-2(%ebp), %eax
+   103e5: 89 04 24                     	movl	%eax, (%esp)
+   103e8: e8 f3 06 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   103ed: 0f b6 c0                     	movzbl	%al, %eax
+   103f0: 0f b6 4d 08                  	movzbl	8(%ebp), %ecx
+   103f4: ba 01 00 00 00               	movl	$1, %edx
+   103f9: d3 e2                        	shll	%cl, %edx
+   103fb: 89 d1                        	movl	%edx, %ecx
+   103fd: 83 f1 ff                     	xorl	$-1, %ecx
+   10400: 21 c8                        	andl	%ecx, %eax
+   10402: 88 45 fd                     	movb	%al, -3(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:85
+   10405: 66 8b 45 fe                  	movw	-2(%ebp), %ax
+   10409: 98                           	cwtl
+   1040a: 89 04 24                     	movl	%eax, (%esp)
+   1040d: 0f b6 45 fd                  	movzbl	-3(%ebp), %eax
+   10411: 89 44 24 04                  	movl	%eax, 4(%esp)
+   10415: e8 a6 06 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:86
+   1041a: 83 c4 0c                     	addl	$12, %esp
+   1041d: 5d                           	popl	%ebp
+   1041e: c3                           	retl
+   1041f: 90                           	nop
+
+00010420 <_Z17__pic_get_irq_regi>:
+; _Z17__pic_get_irq_regi():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:89
+   10420: 55                           	pushl	%ebp
+   10421: 89 e5                        	movl	%esp, %ebp
+   10423: 83 ec 0c                     	subl	$12, %esp
+   10426: 8b 45 08                     	movl	8(%ebp), %eax
+; /Users/jiang/Desktop/fat32-boot/int.cpp:92
+   10429: 8b 45 08                     	movl	8(%ebp), %eax
+   1042c: c7 04 24 20 00 00 00         	movl	$32, (%esp)
+   10433: 0f b6 c0                     	movzbl	%al, %eax
+   10436: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1043a: e8 81 06 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:93
+   1043f: 8b 45 08                     	movl	8(%ebp), %eax
+   10442: c7 04 24 a0 00 00 00         	movl	$160, (%esp)
+   10449: 0f b6 c0                     	movzbl	%al, %eax
+   1044c: 89 44 24 04                  	movl	%eax, 4(%esp)
+   10450: e8 6b 06 00 00               	calll	0x10ac0 <_Z8out_bytesh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:94
+   10455: c7 04 24 a0 00 00 00         	movl	$160, (%esp)
+   1045c: e8 7f 06 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   10461: 0f b6 c0                     	movzbl	%al, %eax
+   10464: c1 e0 08                     	shll	$8, %eax
+   10467: 89 45 fc                     	movl	%eax, -4(%ebp)
+   1046a: c7 04 24 20 00 00 00         	movl	$32, (%esp)
+   10471: e8 6a 06 00 00               	calll	0x10ae0 <_Z7in_bytes>
+   10476: 88 c1                        	movb	%al, %cl
+   10478: 8b 45 fc                     	movl	-4(%ebp), %eax
+   1047b: 0f b6 c9                     	movzbl	%cl, %ecx
+   1047e: 09 c8                        	orl	%ecx, %eax
+   10480: 0f b7 c0                     	movzwl	%ax, %eax
+   10483: 83 c4 0c                     	addl	$12, %esp
+   10486: 5d                           	popl	%ebp
+   10487: c3                           	retl
+   10488: 0f 1f 84 00 00 00 00 00      	nopl	(%eax,%eax)
+
+00010490 <_Z11pic_get_irrv>:
+; _Z11pic_get_irrv():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:98
+   10490: 55                           	pushl	%ebp
+   10491: 89 e5                        	movl	%esp, %ebp
+   10493: 50                           	pushl	%eax
+   10494: c7 04 24 0a 00 00 00         	movl	$10, (%esp)
+   1049b: e8 80 ff ff ff               	calll	0x10420 <_Z17__pic_get_irq_regi>
+   104a0: 0f b7 c0                     	movzwl	%ax, %eax
+   104a3: 83 c4 04                     	addl	$4, %esp
+   104a6: 5d                           	popl	%ebp
+   104a7: c3                           	retl
+   104a8: 0f 1f 84 00 00 00 00 00      	nopl	(%eax,%eax)
+
+000104b0 <_Z11pic_get_isrv>:
+; _Z11pic_get_isrv():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:101
+   104b0: 55                           	pushl	%ebp
+   104b1: 89 e5                        	movl	%esp, %ebp
+   104b3: 50                           	pushl	%eax
+   104b4: c7 04 24 0b 00 00 00         	movl	$11, (%esp)
+   104bb: e8 60 ff ff ff               	calll	0x10420 <_Z17__pic_get_irq_regi>
+   104c0: 0f b7 c0                     	movzwl	%ax, %eax
+   104c3: 83 c4 04                     	addl	$4, %esp
+   104c6: 5d                           	popl	%ebp
+   104c7: c3                           	retl
+   104c8: 0f 1f 84 00 00 00 00 00      	nopl	(%eax,%eax)
+
+000104d0 <_Z8loadIDTRv>:
+; _Z8loadIDTRv():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:105
+   104d0: 55                           	pushl	%ebp
+   104d1: 89 e5                        	movl	%esp, %ebp
+; /Users/jiang/Desktop/fat32-boot/int.cpp:106
+   104d3: 66 c7 05 84 0d 01 00 00 07   	movw	$1792, 68996            # imm = 0x700
+; /Users/jiang/Desktop/fat32-boot/int.cpp:107
+   104dc: 8d 05 8a 0d 01 00            	leal	69002, %eax
+   104e2: a3 86 0d 01 00               	movl	%eax, 68998
+; /Users/jiang/Desktop/fat32-boot/int.cpp:108
+   104e7: 0f 01 1d 84 0d 01 00         	lidtl	68996
+; /Users/jiang/Desktop/fat32-boot/int.cpp:109
+   104ee: 5d                           	popl	%ebp
+   104ef: c3                           	retl
+
+000104f0 <_Z6addIntiPFvvEj>:
+; _Z6addIntiPFvvEj():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:111
+   104f0: 55                           	pushl	%ebp
+   104f1: 89 e5                        	movl	%esp, %ebp
+   104f3: 83 ec 0c                     	subl	$12, %esp
+   104f6: 8b 45 10                     	movl	16(%ebp), %eax
+   104f9: 8b 45 0c                     	movl	12(%ebp), %eax
+   104fc: 8b 45 08                     	movl	8(%ebp), %eax
+; /Users/jiang/Desktop/fat32-boot/int.cpp:112
+   104ff: 66 c7 45 fe 08 00            	movw	$8, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:113
+   10505: 66 8c c8                     	movw	%cs, %ax
+   10508: 66 89 45 fe                  	movw	%ax, -2(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:115
+   1050c: 8b 45 10                     	movl	16(%ebp), %eax
+   1050f: 89 45 f4                     	movl	%eax, -12(%ebp)
+   10512: 85 c0                        	testl	%eax, %eax
+   10514: 0f 84 17 00 00 00            	je	0x10531 <_Z6addIntiPFvvEj+0x41>
+   1051a: e9 00 00 00 00               	jmp	0x1051f <_Z6addIntiPFvvEj+0x2f>
+   1051f: 8b 45 f4                     	movl	-12(%ebp), %eax
+; /Users/jiang/Desktop/fat32-boot/int.cpp:115
+   10522: 48                           	decl	%eax
+   10523: 83 e8 03                     	subl	$3, %eax
+   10526: 0f 82 10 00 00 00            	jb	0x1053c <_Z6addIntiPFvvEj+0x4c>
+   1052c: e9 11 00 00 00               	jmp	0x10542 <_Z6addIntiPFvvEj+0x52>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:117
+   10531: 66 c7 45 fc 00 8e            	movw	$36352, -4(%ebp)        # imm = 0x8E00
+; /Users/jiang/Desktop/fat32-boot/int.cpp:118
+   10537: e9 06 00 00 00               	jmp	0x10542 <_Z6addIntiPFvvEj+0x52>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:122
+   1053c: 66 c7 45 fc 00 ee            	movw	$60928, -4(%ebp)        # imm = 0xEE00
+; /Users/jiang/Desktop/fat32-boot/int.cpp:125
+   10542: 8b 45 0c                     	movl	12(%ebp), %eax
+   10545: 89 45 f8                     	movl	%eax, -8(%ebp)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:126
+   10548: 8b 45 f8                     	movl	-8(%ebp), %eax
+   1054b: 25 ff ff 00 00               	andl	$65535, %eax            # imm = 0xFFFF
+   10550: 66 89 c1                     	movw	%ax, %cx
+   10553: 8b 45 08                     	movl	8(%ebp), %eax
+   10556: 66 89 0c c5 8a 0d 01 00      	movw	%cx, 69002(,%eax,8)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:127
+   1055e: 66 8b 4d fe                  	movw	-2(%ebp), %cx
+   10562: 8b 45 08                     	movl	8(%ebp), %eax
+   10565: 66 89 0c c5 8c 0d 01 00      	movw	%cx, 69004(,%eax,8)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:128
+   1056d: 66 8b 4d fc                  	movw	-4(%ebp), %cx
+   10571: 8b 45 08                     	movl	8(%ebp), %eax
+   10574: 66 89 0c c5 8e 0d 01 00      	movw	%cx, 69006(,%eax,8)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:129
+   1057c: 8b 45 f8                     	movl	-8(%ebp), %eax
+   1057f: c1 e8 10                     	shrl	$16, %eax
+   10582: 66 89 c1                     	movw	%ax, %cx
+   10585: 8b 45 08                     	movl	8(%ebp), %eax
+   10588: 66 89 0c c5 90 0d 01 00      	movw	%cx, 69008(,%eax,8)
+; /Users/jiang/Desktop/fat32-boot/int.cpp:130
+   10590: 83 c4 0c                     	addl	$12, %esp
+   10593: 5d                           	popl	%ebp
+   10594: c3                           	retl
+   10595: 66 66 2e 0f 1f 84 00 00 00 00 00     	nopw	%cs:(%eax,%eax)
+
+000105a0 <_Z21initialize_interruptsv>:
+; _Z21initialize_interruptsv():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:131
+   105a0: 55                           	pushl	%ebp
+   105a1: 89 e5                        	movl	%esp, %ebp
+   105a3: 83 ec 0c                     	subl	$12, %esp
+; /Users/jiang/Desktop/fat32-boot/int.cpp:132
+   105a6: fa                           	cli
+; /Users/jiang/Desktop/fat32-boot/int.cpp:133
+   105a7: c7 04 24 20 00 00 00         	movl	$32, (%esp)
+   105ae: c7 44 24 04 28 00 00 00      	movl	$40, 4(%esp)
+   105b6: e8 d5 fb ff ff               	calll	0x10190 <_Z9PIC_remapii>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:134
+   105bb: c7 04 24 ff 00 00 00         	movl	$255, (%esp)
+   105c2: e8 39 fd ff ff               	calll	0x10300 <_Z12IRQ_set_maskh>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:135
+   105c7: e8 04 ff ff ff               	calll	0x104d0 <_Z8loadIDTRv>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:136
+   105cc: 31 c0                        	xorl	%eax, %eax
+   105ce: 8d 05 60 08 01 00            	leal	67680, %eax
+   105d4: c7 04 24 00 00 00 00         	movl	$0, (%esp)
+   105db: 89 44 24 04                  	movl	%eax, 4(%esp)
+   105df: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   105e7: e8 04 ff ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:137
+   105ec: 8d 05 7e 08 01 00            	leal	67710, %eax
+   105f2: 31 c9                        	xorl	%ecx, %ecx
+   105f4: c7 04 24 01 00 00 00         	movl	$1, (%esp)
+   105fb: 89 44 24 04                  	movl	%eax, 4(%esp)
+   105ff: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10607: e8 e4 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:138
+   1060c: 8d 05 9c 08 01 00            	leal	67740, %eax
+   10612: 31 c9                        	xorl	%ecx, %ecx
+   10614: c7 04 24 02 00 00 00         	movl	$2, (%esp)
+   1061b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1061f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10627: e8 c4 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:139
+   1062c: 8d 05 ba 08 01 00            	leal	67770, %eax
+   10632: 31 c9                        	xorl	%ecx, %ecx
+   10634: c7 04 24 03 00 00 00         	movl	$3, (%esp)
+   1063b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1063f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10647: e8 a4 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:140
+   1064c: 8d 05 d8 08 01 00            	leal	67800, %eax
+   10652: 31 c9                        	xorl	%ecx, %ecx
+   10654: c7 04 24 04 00 00 00         	movl	$4, (%esp)
+   1065b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1065f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10667: e8 84 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:141
+   1066c: 8d 05 f6 08 01 00            	leal	67830, %eax
+   10672: 31 c9                        	xorl	%ecx, %ecx
+   10674: c7 04 24 05 00 00 00         	movl	$5, (%esp)
+   1067b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1067f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10687: e8 64 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:142
+   1068c: 8d 05 14 09 01 00            	leal	67860, %eax
+   10692: 31 c9                        	xorl	%ecx, %ecx
+   10694: c7 04 24 06 00 00 00         	movl	$6, (%esp)
+   1069b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1069f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   106a7: e8 44 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:143
+   106ac: 8d 05 32 09 01 00            	leal	67890, %eax
+   106b2: 31 c9                        	xorl	%ecx, %ecx
+   106b4: c7 04 24 07 00 00 00         	movl	$7, (%esp)
+   106bb: 89 44 24 04                  	movl	%eax, 4(%esp)
+   106bf: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   106c7: e8 24 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:144
+   106cc: 8d 05 50 09 01 00            	leal	67920, %eax
+   106d2: 31 c9                        	xorl	%ecx, %ecx
+   106d4: c7 04 24 08 00 00 00         	movl	$8, (%esp)
+   106db: 89 44 24 04                  	movl	%eax, 4(%esp)
+   106df: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   106e7: e8 04 fe ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:145
+   106ec: 8d 05 6e 09 01 00            	leal	67950, %eax
+   106f2: 31 c9                        	xorl	%ecx, %ecx
+   106f4: c7 04 24 09 00 00 00         	movl	$9, (%esp)
+   106fb: 89 44 24 04                  	movl	%eax, 4(%esp)
+   106ff: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10707: e8 e4 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:146
+   1070c: 8d 05 8c 09 01 00            	leal	67980, %eax
+   10712: 31 c9                        	xorl	%ecx, %ecx
+   10714: c7 04 24 0a 00 00 00         	movl	$10, (%esp)
+   1071b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1071f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10727: e8 c4 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:147
+   1072c: 8d 05 aa 09 01 00            	leal	68010, %eax
+   10732: 31 c9                        	xorl	%ecx, %ecx
+   10734: c7 04 24 0b 00 00 00         	movl	$11, (%esp)
+   1073b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1073f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10747: e8 a4 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:148
+   1074c: 8d 05 c8 09 01 00            	leal	68040, %eax
+   10752: 31 c9                        	xorl	%ecx, %ecx
+   10754: c7 04 24 0c 00 00 00         	movl	$12, (%esp)
+   1075b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1075f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10767: e8 84 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:149
+   1076c: 8d 05 e6 09 01 00            	leal	68070, %eax
+   10772: 31 c9                        	xorl	%ecx, %ecx
+   10774: c7 04 24 0d 00 00 00         	movl	$13, (%esp)
+   1077b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1077f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10787: e8 64 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:150
+   1078c: 8d 05 04 0a 01 00            	leal	68100, %eax
+   10792: 31 c9                        	xorl	%ecx, %ecx
+   10794: c7 04 24 0e 00 00 00         	movl	$14, (%esp)
+   1079b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1079f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   107a7: e8 44 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:151
+   107ac: 8d 05 22 0a 01 00            	leal	68130, %eax
+   107b2: 31 c9                        	xorl	%ecx, %ecx
+   107b4: c7 04 24 0f 00 00 00         	movl	$15, (%esp)
+   107bb: 89 44 24 04                  	movl	%eax, 4(%esp)
+   107bf: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   107c7: e8 24 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:152
+   107cc: 8d 05 40 0a 01 00            	leal	68160, %eax
+   107d2: 31 c9                        	xorl	%ecx, %ecx
+   107d4: c7 04 24 10 00 00 00         	movl	$16, (%esp)
+   107db: 89 44 24 04                  	movl	%eax, 4(%esp)
+   107df: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   107e7: e8 04 fd ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:153
+   107ec: 8d 05 5e 0a 01 00            	leal	68190, %eax
+   107f2: 31 c9                        	xorl	%ecx, %ecx
+   107f4: c7 04 24 11 00 00 00         	movl	$17, (%esp)
+   107fb: 89 44 24 04                  	movl	%eax, 4(%esp)
+   107ff: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10807: e8 e4 fc ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:154
+   1080c: 8d 05 7c 0a 01 00            	leal	68220, %eax
+   10812: 31 c9                        	xorl	%ecx, %ecx
+   10814: c7 04 24 12 00 00 00         	movl	$18, (%esp)
+   1081b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1081f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10827: e8 c4 fc ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:155
+   1082c: 8d 05 9a 0a 01 00            	leal	68250, %eax
+   10832: 31 c9                        	xorl	%ecx, %ecx
+   10834: c7 04 24 13 00 00 00         	movl	$19, (%esp)
+   1083b: 89 44 24 04                  	movl	%eax, 4(%esp)
+   1083f: c7 44 24 08 00 00 00 00      	movl	$0, 8(%esp)
+   10847: e8 a4 fc ff ff               	calll	0x104f0 <_Z6addIntiPFvvEj>
+; /Users/jiang/Desktop/fat32-boot/int.cpp:156
+   1084c: fb                           	sti
+; /Users/jiang/Desktop/fat32-boot/int.cpp:157
+   1084d: 83 c4 0c                     	addl	$12, %esp
+   10850: 5d                           	popl	%ebp
+   10851: c3                           	retl
+   10852: 66 90                        	nop
+   10854: 66 90                        	nop
+   10856: 66 90                        	nop
+   10858: 66 90                        	nop
+   1085a: 66 90                        	nop
+   1085c: 66 90                        	nop
+   1085e: 66 90                        	nop
+
+00010860 <int_0>:
+; int_0():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10860: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10861: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10862: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10863: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10865: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10867: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   1086c: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   1086e: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10870: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10871: e8 ea ff ff ff               	calll	0x10860 <int_0>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10876: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10878: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   1087a: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   1087b: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   1087c: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   1087d: cf                           	iretl
+
+0001087e <int_1>:
+; int_1():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   1087e: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   1087f: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10880: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10881: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10883: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10885: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   1088a: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   1088c: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   1088e: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   1088f: e8 ea ff ff ff               	calll	0x1087e <int_1>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10894: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10896: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10898: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10899: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   1089a: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   1089b: cf                           	iretl
+
+0001089c <int_2>:
+; int_2():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   1089c: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   1089d: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   1089e: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   1089f: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   108a1: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   108a3: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   108a8: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   108aa: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   108ac: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   108ad: e8 ea ff ff ff               	calll	0x1089c <int_2>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   108b2: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   108b4: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   108b6: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   108b7: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   108b8: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   108b9: cf                           	iretl
+
+000108ba <int_3>:
+; int_3():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   108ba: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   108bb: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   108bc: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   108bd: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   108bf: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   108c1: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   108c6: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   108c8: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   108ca: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   108cb: e8 ea ff ff ff               	calll	0x108ba <int_3>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   108d0: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   108d2: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   108d4: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   108d5: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   108d6: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   108d7: cf                           	iretl
+
+000108d8 <int_4>:
+; int_4():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   108d8: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   108d9: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   108da: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   108db: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   108dd: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   108df: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   108e4: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   108e6: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   108e8: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   108e9: e8 ea ff ff ff               	calll	0x108d8 <int_4>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   108ee: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   108f0: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   108f2: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   108f3: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   108f4: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   108f5: cf                           	iretl
+
+000108f6 <int_5>:
+; int_5():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   108f6: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   108f7: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   108f8: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   108f9: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   108fb: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   108fd: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10902: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10904: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10906: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10907: e8 ea ff ff ff               	calll	0x108f6 <int_5>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   1090c: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   1090e: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10910: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10911: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10912: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10913: cf                           	iretl
+
+00010914 <int_6>:
+; int_6():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10914: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10915: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10916: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10917: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10919: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   1091b: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10920: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10922: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10924: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10925: e8 ea ff ff ff               	calll	0x10914 <int_6>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   1092a: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   1092c: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   1092e: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   1092f: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10930: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10931: cf                           	iretl
+
+00010932 <int_7>:
+; int_7():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10932: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10933: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10934: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10935: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10937: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10939: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   1093e: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10940: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10942: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10943: e8 ea ff ff ff               	calll	0x10932 <int_7>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10948: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   1094a: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   1094c: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   1094d: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   1094e: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   1094f: cf                           	iretl
+
+00010950 <int_8>:
+; int_8():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10950: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10951: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10952: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10953: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10955: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10957: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   1095c: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   1095e: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10960: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10961: e8 ea ff ff ff               	calll	0x10950 <int_8>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10966: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10968: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   1096a: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   1096b: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   1096c: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   1096d: cf                           	iretl
+
+0001096e <int_9>:
+; int_9():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   1096e: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   1096f: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10970: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10971: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10973: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10975: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   1097a: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   1097c: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   1097e: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   1097f: e8 ea ff ff ff               	calll	0x1096e <int_9>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10984: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10986: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10988: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10989: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   1098a: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   1098b: cf                           	iretl
+
+0001098c <int_10>:
+; int_10():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   1098c: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   1098d: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   1098e: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   1098f: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10991: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10993: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10998: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   1099a: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   1099c: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   1099d: e8 ea ff ff ff               	calll	0x1098c <int_10>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   109a2: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   109a4: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   109a6: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   109a7: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   109a8: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   109a9: cf                           	iretl
+
+000109aa <int_11>:
+; int_11():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   109aa: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   109ab: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   109ac: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   109ad: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   109af: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   109b1: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   109b6: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   109b8: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   109ba: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   109bb: e8 ea ff ff ff               	calll	0x109aa <int_11>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   109c0: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   109c2: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   109c4: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   109c5: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   109c6: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   109c7: cf                           	iretl
+
+000109c8 <int_12>:
+; int_12():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   109c8: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   109c9: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   109ca: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   109cb: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   109cd: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   109cf: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   109d4: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   109d6: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   109d8: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   109d9: e8 ea ff ff ff               	calll	0x109c8 <int_12>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   109de: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   109e0: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   109e2: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   109e3: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   109e4: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   109e5: cf                           	iretl
+
+000109e6 <int_13>:
+; int_13():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   109e6: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   109e7: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   109e8: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   109e9: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   109eb: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   109ed: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   109f2: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   109f4: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   109f6: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   109f7: e8 ea ff ff ff               	calll	0x109e6 <int_13>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   109fc: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   109fe: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a00: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a01: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a02: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a03: cf                           	iretl
+
+00010a04 <int_14>:
+; int_14():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a04: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a05: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a06: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a07: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a09: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10a0b: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10a10: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10a12: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10a14: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10a15: e8 ea ff ff ff               	calll	0x10a04 <int_14>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10a1a: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10a1c: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a1e: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a1f: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a20: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a21: cf                           	iretl
+
+00010a22 <int_15>:
+; int_15():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a22: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a23: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a24: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a25: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a27: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10a29: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10a2e: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10a30: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10a32: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10a33: e8 ea ff ff ff               	calll	0x10a22 <int_15>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10a38: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10a3a: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a3c: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a3d: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a3e: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a3f: cf                           	iretl
+
+00010a40 <int_16>:
+; int_16():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a40: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a41: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a42: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a43: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a45: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10a47: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10a4c: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10a4e: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10a50: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10a51: e8 ea ff ff ff               	calll	0x10a40 <int_16>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10a56: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10a58: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a5a: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a5b: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a5c: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a5d: cf                           	iretl
+
+00010a5e <int_17>:
+; int_17():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a5e: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a5f: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a60: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a61: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a63: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10a65: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10a6a: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10a6c: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10a6e: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10a6f: e8 ea ff ff ff               	calll	0x10a5e <int_17>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10a74: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10a76: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a78: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a79: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a7a: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a7b: cf                           	iretl
+
+00010a7c <int_18>:
+; int_18():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a7c: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a7d: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a7e: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a7f: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a81: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10a83: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10a88: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10a8a: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10a8c: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10a8d: e8 ea ff ff ff               	calll	0x10a7c <int_18>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10a92: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10a94: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10a96: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10a97: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10a98: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10a99: cf                           	iretl
+
+00010a9a <int_19>:
+; int_19():
+; /Users/jiang/Desktop/fat32-boot/ints.asm:5
+   10a9a: 60                           	pushal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:6
+   10a9b: 1e                           	pushl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:7
+   10a9c: 06                           	pushl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:8
+   10a9d: 0f a0                        	pushl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:9
+   10a9f: 0f a8                        	pushl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:10
+   10aa1: b8 10 00 00 00               	movl	$16, %eax
+; /Users/jiang/Desktop/fat32-boot/ints.asm:11
+   10aa6: 8e d8                        	movl	%eax, %ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:12
+   10aa8: 8e c0                        	movl	%eax, %es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:13
+   10aaa: fc                           	cld
+; /Users/jiang/Desktop/fat32-boot/ints.asm:14
+   10aab: e8 ea ff ff ff               	calll	0x10a9a <int_19>
+; /Users/jiang/Desktop/fat32-boot/ints.asm:15
+   10ab0: 0f a9                        	popl	%gs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:16
+   10ab2: 0f a1                        	popl	%fs
+; /Users/jiang/Desktop/fat32-boot/ints.asm:17
+   10ab4: 07                           	popl	%es
+; /Users/jiang/Desktop/fat32-boot/ints.asm:18
+   10ab5: 1f                           	popl	%ds
+; /Users/jiang/Desktop/fat32-boot/ints.asm:19
+   10ab6: 61                           	popal
+; /Users/jiang/Desktop/fat32-boot/ints.asm:20
+   10ab7: cf                           	iretl
+
+Disassembly of section .text._Z8out_bytesh:
+
+00010ac0 <_Z8out_bytesh>:
+; _Z8out_bytesh():
+; /Users/jiang/Desktop/fat32-boot/./port.h:26
+   10ac0: 55                           	pushl	%ebp
+   10ac1: 89 e5                        	movl	%esp, %ebp
+   10ac3: 8a 45 0c                     	movb	12(%ebp), %al
+   10ac6: 66 8b 45 08                  	movw	8(%ebp), %ax
+; /Users/jiang/Desktop/fat32-boot/./port.h:27
+   10aca: 8a 45 0c                     	movb	12(%ebp), %al
+   10acd: 66 8b 55 08                  	movw	8(%ebp), %dx
+   10ad1: ee                           	outb	%al, %dx
+; /Users/jiang/Desktop/fat32-boot/./port.h:28
+   10ad2: 5d                           	popl	%ebp
+   10ad3: c3                           	retl
+
+Disassembly of section .text._Z7in_bytes:
+
+00010ae0 <_Z7in_bytes>:
+; _Z7in_bytes():
+; /Users/jiang/Desktop/fat32-boot/./port.h:11
+   10ae0: 55                           	pushl	%ebp
+   10ae1: 89 e5                        	movl	%esp, %ebp
+   10ae3: 50                           	pushl	%eax
+   10ae4: 66 8b 45 08                  	movw	8(%ebp), %ax
+; /Users/jiang/Desktop/fat32-boot/./port.h:13
+   10ae8: 8a 55 ff                     	movb	-1(%ebp), %dl
+   10aeb: ed                           	inl	%dx, %eax
+   10aec: 66 89 45 08                  	movw	%ax, 8(%ebp)
+; /Users/jiang/Desktop/fat32-boot/./port.h:14
+   10af0: 0f b6 45 ff                  	movzbl	-1(%ebp), %eax
+   10af4: 83 c4 04                     	addl	$4, %esp
+   10af7: 5d                           	popl	%ebp
+   10af8: c3                           	retl
+
+Disassembly of section .text._Z7io_waitv:
+
+00010b00 <_Z7io_waitv>:
+; _Z7io_waitv():
+; /Users/jiang/Desktop/fat32-boot/int.cpp:3
+   10b00: 55                           	pushl	%ebp
+   10b01: 89 e5                        	movl	%esp, %ebp
+   10b03: 83 ec 08                     	subl	$8, %esp
+   10b06: 31 c0                        	xorl	%eax, %eax
+   10b08: c7 04 24 80 00 00 00         	movl	$128, (%esp)
+   10b0f: c7 44 24 04 00 00 00 00      	movl	$0, 4(%esp)
+   10b17: e8 a4 ff ff ff               	calll	0x10ac0 <_Z8out_bytesh>
+   10b1c: 83 c4 08                     	addl	$8, %esp
+   10b1f: 5d                           	popl	%ebp
+   10b20: c3                           	retl
