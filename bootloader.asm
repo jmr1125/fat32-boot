@@ -1,5 +1,5 @@
 %ifidn __?OUTPUT_FORMAT?__,bin
-	org     0x7c00
+	org     0x8000
 	[map    all bootloader.map]
 %endif
 section .text
@@ -10,25 +10,6 @@ global  main
 %warning "DEBUG IS ON"
 %endif
 
-begin:
-	bits 16
-	call get_addr
-
-get_addr:
-	pop eax
-	sub eax, 3
-	mov [entry_point], ax
-	xor ebx, ebx
-	mov bx, [entry_point]
-	;;  copy self to 0x0000:0x7c00
-	mov ax, 0
-	mov es, ax
-	mov ds, ax
-	mov esi, ebx
-	mov edi, 0x7c00
-	mov ecx, end - begin
-	rep movsb
-	jmp 0x0:0x7c00+start-begin; jmp to start of 0x7c00
 
 start:
 	[BITS 16]; We need 16-bit intructions for Real mode
@@ -66,13 +47,14 @@ clear_pipe:
 	mov al, 0
 	rep stosb
 	jmp main
+	cli
+	hlt
 %include "basic32.inc"
 %include "disk.inc"
 %include "res.img.inc"
 %include "config.inc"
 
 main:
-	trap
 	mov  esi, protected_mode_string
 	mov  ecx, 23
 	mov  ebx, 0
@@ -96,6 +78,7 @@ main:
 	call  puthex
 	mov   eax, 1
 	call  flip
+	trap
 	print 23, 1, 0x0f, "data location:"
 	scr_move 23,15
 	mov   dx, [data_loc]
@@ -112,7 +95,6 @@ main:
 	mov  edi, buffer.fat
 	rep  stosb
 	xor  eax, eax
-	trap
 	push WORD [data_loc]
 
 .find_kernel_reread:
@@ -165,7 +147,6 @@ main:
 	jmp   hang
 
 .break_found:
-	trap
 	print 23, 1, 0x0f, "kernel found"
 	mov   eax, 1
 	call  flip
@@ -203,7 +184,6 @@ main:
 .load_kernel:
 	;;    read data
 	mov   eax, [kernel_cluster]
-	trap
 	push  eax
 	sub   eax, 2
 	xor   ecx, ecx
@@ -236,6 +216,7 @@ main:
 	mov   edx, [kernel_cluster]
 	call  puthex
 	mov   eax, 1
+	trap
 	call  flip
 	mov eax, [kernel_cluster]
 	and eax, 0x3f		;mod 128
@@ -244,7 +225,6 @@ main:
 	and eax, 0x0fffffff
 	cmp eax, 0x0ffffff8
 	jl .load_kernel
-
 	jmp kernel_off
 hang:
 	mov dx, 0xe9
@@ -263,7 +243,6 @@ section .data
 
 drive:
 	db      0
-	entry_point: dw 0
 	section .rodata
 
 protected_mode_string:
@@ -303,6 +282,8 @@ gdt:
 
 	kernel_name: db 'KERNEL      ',0xff
 
+	times 100 db 0x88
+	align 512 ,db 0x89
 end:
 
 	section .bss

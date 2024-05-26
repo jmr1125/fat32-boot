@@ -109,5 +109,4 @@ Real              Virtual           Name
             7E02              7E02  buf_fat
             8002              8002  buf_data
             8202              8202  kernel_pointer
-            8206              8206  kernel_code
 

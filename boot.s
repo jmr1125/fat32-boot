@@ -2,6 +2,7 @@
 	[map all boot.map]
 	org 0x7c00
 	%endif
+%define kernel_code 0x8000
 bootsector:
 jmpcmd:
 	db 0
@@ -245,4 +246,3 @@ DrvNum db ?
 buf_fat resb 512
 buf_data resb 512
 kernel_pointer:	resb	4
-kernel_code:

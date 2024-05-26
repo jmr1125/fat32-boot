@@ -6,48 +6,48 @@ Output file:  bootloader
 
 -- Program origin -------------------------------------------------------------
 
-00007C00
+00008000
 
 -- Sections (summary) ---------------------------------------------------------
 
 Vstart            Start             Stop              Length    Class     Name
-            7C00              7C00              8067  00000467  progbits  .text
-            8068              8068              80D2  0000006A  progbits  .data
-            80D4              80D4              8117  00000043  progbits  .rodata
-            8118              8118              8725  0000060D  nobits    .bss
+            8000              8000              845A  0000045A  progbits  .text
+            845C              845C              84C4  00000068  progbits  .data
+            8600              8600              8800  00000200  progbits  .rodata
+            8800              8800              8E0D  0000060D  nobits    .bss
 
 -- Sections (detailed) --------------------------------------------------------
 
 ---- Section .text ------------------------------------------------------------
 
 class:     progbits
-length:                 467
-start:                 7C00
+length:                 45A
+start:                 8000
 align:     not defined
 follows:   not defined
-vstart:                7C00
+vstart:                8000
 valign:    not defined
 vfollows:  not defined
 
 ---- Section .data ------------------------------------------------------------
 
 class:     progbits
-length:                  6A
-start:                 8068
+length:                  68
+start:                 845C
 align:                    4
 follows:   not defined
-vstart:                8068
+vstart:                845C
 valign:    not defined
 vfollows:  not defined
 
 ---- Section .rodata ----------------------------------------------------------
 
 class:     progbits
-length:                  43
-start:                 80D4
-align:                    4
+length:                 200
+start:                 8600
+align:                  200
 follows:   not defined
-vstart:                80D4
+vstart:                8600
 valign:    not defined
 vfollows:  not defined
 
@@ -55,10 +55,10 @@ vfollows:  not defined
 
 class:     nobits
 length:                 60D
-start:                 8118
+start:                 8800
 align:     not defined
 follows:   not defined
-vstart:                8118
+vstart:                8800
 valign:                   4
 vfollows:  not defined
 
@@ -67,101 +67,98 @@ vfollows:  not defined
 ---- Section .text ------------------------------------------------------------
 
 Real              Virtual           Name
-            7C00              7C00  begin
-            7C03              7C03  get_addr
-            7C30              7C30  start
-            7C4D              7C4D  clear_pipe
-            7C78              7C78  calculate_offset
-            7C89              7C89  _putc
-            7C8F              7C8F  _puts
-            7CA1              7CA1  _puts.done
-            7CA2              7CA2  _puthex
-            7CBF              7CBF  _puthex.loop
-            7CC9              7CC9  _puthex.digit
-            7CCD              7CCD  _puthex.alpha
-            7CCF              7CCF  _puthex.ok
-            7CE0              7CE0  putc
-            7CEB              7CEB  puts
-            7CF6              7CF6  puthex
-            7D0D              7D0D  flip
-            7D23              7D23  read
-            7D63              7D63  read.wait
-            7D7B              7D7B  fat_loc
-            7D7D              7D7D  data_loc
-            7D7F              7D7F  main
-            7E6A              7E6A  main.find_kernel_reread
-            7E83              7E83  main.next_entry
-            7E9B              7E9B  main.cmp
-            7EB6              7EB6  main.break
-            7EDB              7EDB  main.break_found
-            7F9F              7F9F  main.load_kernel
-            8055              8055  hang
-            8065              8065  hang.hang
+            8000              8000  start
+            801D              801D  clear_pipe
+            804A              804A  calculate_offset
+            806D              806D  _putc
+            8073              8073  _puts
+            8085              8085  _puts.done
+            8086              8086  _puthex
+            80A3              80A3  _puthex.loop
+            80AD              80AD  _puthex.digit
+            80B1              80B1  _puthex.alpha
+            80B3              80B3  _puthex.ok
+            80C4              80C4  putc
+            80CF              80CF  puts
+            80DA              80DA  puthex
+            80F1              80F1  flip
+            8110              8110  read
+            8150              8150  read.wait
+            8168              8168  fat_loc
+            816A              816A  data_loc
+            816C              816C  main
+            825A              825A  main.find_kernel_reread
+            8273              8273  main.next_entry
+            828B              828B  main.cmp
+            82A6              82A6  main.break
+            82CB              82CB  main.break_found
+            838F              838F  main.load_kernel
+            8448              8448  hang
+            8458              8458  hang.hang
 
 ---- Section .data ------------------------------------------------------------
 
 Real              Virtual           Name
-            8068              8068  ..@5.string
-            806F              806F  ..@10.string
-            807D              807D  ..@15.string
-            808C              808C  ..@20.string
-            809D              809D  ..@24.string
-            80AA              80AA  ..@28.string
-            80B5              80B5  ..@33.string
-            80C3              80C3  ..@38.string
-            80CF              80CF  drive
-            80D0              80D0  entry_point
+            845C              845C  ..@4.string
+            8463              8463  ..@9.string
+            8471              8471  ..@14.string
+            8480              8480  ..@19.string
+            8491              8491  ..@23.string
+            849E              849E  ..@27.string
+            84A9              84A9  ..@32.string
+            84B7              84B7  ..@37.string
+            84C3              84C3  drive
 
 ---- Section .rodata ----------------------------------------------------------
 
 Real              Virtual           Name
-            80D4              80D4  protected_mode_string
-            80EB              80EB  protected_mode_string.end
-            80EC              80EC  gdt
-            80EC              80EC  gdt_null
-            80F4              80F4  gdt_code
-            80FC              80FC  gdt_data
-            8104              8104  gdt_end
-            8104              8104  gdt_desc
-            810A              810A  kernel_name
-            8117              8117  end
+            8600              8600  protected_mode_string
+            8617              8617  protected_mode_string.end
+            8618              8618  gdt
+            8618              8618  gdt_null
+            8620              8620  gdt_code
+            8628              8628  gdt_data
+            8630              8630  gdt_end
+            8630              8630  gdt_desc
+            8636              8636  kernel_name
+            8800              8800  end
 
 ---- Section .bss -------------------------------------------------------------
 
 Real              Virtual           Name
-            8118              8118  hexbuf
-            8121              8121  bootsect
-            8121              8121  bootsect.jmpcmd
-            8124              8124  bootsect.BS_OEMNAME
-            812C              812C  bootsect.BPB_BytsPerSec
-            812E              812E  bootsect.BPB_SecPerClus
-            812F              812F  bootsect.BPB_RsvdSecCnt
-            8131              8131  bootsect.BPB_NumFATs
-            8132              8132  bootsect.BPB_RootEntCnt
-            8134              8134  bootsect.BPB_TotSec16
-            8136              8136  bootsect.BPB_Media
-            8137              8137  bootsect.BPB_FATSz16
-            8139              8139  bootsect.BPB_SecPerTrk
-            813B              813B  bootsect.BPB_NumHeads
-            813D              813D  bootsect.BPB_HiddSec
-            8141              8141  bootsect.BPB_TotSec32
-            8145              8145  bootsect.BPB_FATSz32
-            8149              8149  bootsect.BPB_ExtFlags
-            814B              814B  bootsect.BPB_FSVer
-            814D              814D  bootsect.BPB_RootClus
-            8151              8151  bootsect.BPB_FSInfo
-            8153              8153  bootsect.BPB_BkBootSec
-            8155              8155  bootsect.BPB_Reserved
-            8161              8161  bootsect.BS_DrvNum
-            8162              8162  bootsect.BS_Reserved
-            8163              8163  bootsect.BS_BootSig
-            8164              8164  bootsect.BS_VolID
-            8168              8168  bootsect.BS_VolLab
-            8173              8173  bootsect.BS_FilSysType
-            817B              817B  bootsect.BS_BootCode32
-            831F              831F  bootsect.BS_BootSign
-            8321              8321  buffer
-            8321              8321  buffer.fat
-            8521              8521  buffer.data
-            8721              8721  kernel_cluster
+            8800              8800  hexbuf
+            8809              8809  bootsect
+            8809              8809  bootsect.jmpcmd
+            880C              880C  bootsect.BS_OEMNAME
+            8814              8814  bootsect.BPB_BytsPerSec
+            8816              8816  bootsect.BPB_SecPerClus
+            8817              8817  bootsect.BPB_RsvdSecCnt
+            8819              8819  bootsect.BPB_NumFATs
+            881A              881A  bootsect.BPB_RootEntCnt
+            881C              881C  bootsect.BPB_TotSec16
+            881E              881E  bootsect.BPB_Media
+            881F              881F  bootsect.BPB_FATSz16
+            8821              8821  bootsect.BPB_SecPerTrk
+            8823              8823  bootsect.BPB_NumHeads
+            8825              8825  bootsect.BPB_HiddSec
+            8829              8829  bootsect.BPB_TotSec32
+            882D              882D  bootsect.BPB_FATSz32
+            8831              8831  bootsect.BPB_ExtFlags
+            8833              8833  bootsect.BPB_FSVer
+            8835              8835  bootsect.BPB_RootClus
+            8839              8839  bootsect.BPB_FSInfo
+            883B              883B  bootsect.BPB_BkBootSec
+            883D              883D  bootsect.BPB_Reserved
+            8849              8849  bootsect.BS_DrvNum
+            884A              884A  bootsect.BS_Reserved
+            884B              884B  bootsect.BS_BootSig
+            884C              884C  bootsect.BS_VolID
+            8850              8850  bootsect.BS_VolLab
+            885B              885B  bootsect.BS_FilSysType
+            8863              8863  bootsect.BS_BootCode32
+            8A07              8A07  bootsect.BS_BootSign
+            8A09              8A09  buffer
+            8A09              8A09  buffer.fat
+            8C09              8C09  buffer.data
+            8E09              8E09  kernel_cluster
 

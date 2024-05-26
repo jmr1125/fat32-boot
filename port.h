@@ -7,6 +7,7 @@ typedef byte uint8_t;
 typedef word uint16_t;
 typedef dword uint32_t;
 typedef qword uint64_t;
+typedef unsigned short USHORT;
 
 inline byte in_byte(short port){
   byte b;
@@ -37,4 +38,6 @@ inline void out_dword(short port, dword d){
 #define outw(port, data)		(out_word(port, data))
 #define outl(port, data)		(out_dword(port, data))
 #define inb(port)			(in_byte(port))
-
+#define inl(port) (inb(port))
+#define WRITE_PORT_USHORT(port, data) (out_word(port,data))
+#define READ_PORT_USHORT(port) (in_word(port))
