@@ -1,5 +1,5 @@
 CXXFLAGS=-std=c++20
-KERNEL_OFF=0x10000
+KERNEL_OFF=0x9f000
 all: readfat res.img
 readfat: read.cpp fat32.hpp
 	clang++ read.cpp $(CXXFLAGS) -g -o readfat

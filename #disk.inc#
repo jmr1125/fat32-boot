@@ -53,9 +53,7 @@ mov [disk_packet.addr], di
 mov [disk_packet.seg], ds
 pusha
 shr edi, 16
-shl edi, 12
-add [disk_packet.seg], edi
-popa
+shl edi, 20
 lea si, [disk_packet]
 mov ah, 0x42
 int 0x13
