@@ -2,7 +2,7 @@
 	[map all boot.map]
 	org 0x7c00
 	%endif
-%define kernel_code 0x8000
+%define kernel_code 0x9000
 bootsector:
 jmpcmd:
 	db 0
