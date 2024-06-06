@@ -313,6 +313,7 @@ buffer:
 .data:
 	times 512 db ?
 <<<<<<< HEAD
+<<<<<<< HEAD
 kernel_cluster: dd ?
 	
 	%define KERNEL_SIZE ($-$$)
@@ -320,8 +321,13 @@ kernel_cluster: dd ?
 	%error "Kernel is too big"
 	%endif
 =======
+=======
+>>>>>>> main
 
 disk:	db ?
 kernel_pointer:	dw ?
 kernel_off_pointer:	dd ?
+<<<<<<< HEAD
+>>>>>>> main
+=======
 >>>>>>> main
