@@ -1,5 +1,5 @@
 %ifidn __?OUTPUT_FORMAT?__,bin
-	org     0x8000
+	org     0x9000
 	[map    all bootloader.map]
 %endif
 section .text
@@ -333,5 +333,9 @@ buffer:
 
 .data:
 	times 512 db ?
-	kernel_cluster: dd ?
-
+kernel_cluster: dd ?
+	
+	%define KERNEL_SIZE ($-$$)
+	%if KERNEL_SIZE > 0x10000
+	%error "Kernel is too big"
+	%endif
