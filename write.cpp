@@ -217,20 +217,17 @@ struct file : public file_node {
     }
     f.seekg(0, ios::end);
     int tot_len = f.tellg();
-    cout <<dec<< "File length: " << tot_len << endl;
+    cout << dec << "File length: " << tot_len << endl;
     f.seekg(0, ios::beg);
     for (auto &i : clusters) {
       o.seekp(base + (i - 2) * BytesPerSec * SecPerClus);
-      char buf[BytesPerSec * SecPerClus];
-      f.read(buf, BytesPerSec * SecPerClus);
-      cout << "Cluster " << i << " filled\n";
-      cout << "File length: " << tot_len << endl;
-      if (tot_len < BytesPerSec * SecPerClus) {
-        o.write(buf, tot_len);
-      } else {
-        o.write(buf, BytesPerSec * SecPerClus);
+      for (int i = 0; i < BytesPerSec * SecPerClus; i++) {
+        char c = f.get();
+        // if (i > 1420) {
+        //   cout <<dec<<i<<" "<<hex<< (int)c << "\n";
+        // }
+        o.put(c);
       }
-      tot_len -= BytesPerSec * SecPerClus;
     }
   }
   virtual vector<FileEntry> get_fe(string name, string ext, int, int) override {

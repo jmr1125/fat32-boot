@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 
 - NASM Map file ---------------------------------------------------------------
 
@@ -13,17 +11,17 @@ Output file:  bootloader
 -- Sections (summary) ---------------------------------------------------------
 
 Vstart            Start             Stop              Length    Class     Name
-            9000              9000              93A5  000003A5  progbits  .text
-            9400              9400              9600  00000200  progbits  .rodata
-            9600              9600              9600  00000000  progbits  .data
-            9600              9600              9C18  00000618  nobits    .bss
+            9000              9000              949E  0000049E  progbits  .text
+            94A0              94A0              9508  00000068  progbits  .data
+            9600              9600              9800  00000200  progbits  .rodata
+            9800              9800              9E0D  0000060D  nobits    .bss
 
 -- Sections (detailed) --------------------------------------------------------
 
 ---- Section .text ------------------------------------------------------------
 
 class:     progbits
-length:                 3A5
+length:                 49E
 start:                 9000
 align:     not defined
 follows:   not defined
@@ -31,23 +29,23 @@ vstart:                9000
 valign:    not defined
 vfollows:  not defined
 
+---- Section .data ------------------------------------------------------------
+
+class:     progbits
+length:                  68
+start:                 94A0
+align:                    4
+follows:   not defined
+vstart:                94A0
+valign:    not defined
+vfollows:  not defined
+
 ---- Section .rodata ----------------------------------------------------------
 
 class:     progbits
 length:                 200
-start:                 9400
-align:                  200
-follows:   not defined
-vstart:                9400
-valign:    not defined
-vfollows:  not defined
-
----- Section .data ------------------------------------------------------------
-
-class:     progbits
-length:                   0
 start:                 9600
-align:                    4
+align:                  200
 follows:   not defined
 vstart:                9600
 valign:    not defined
@@ -56,11 +54,11 @@ vfollows:  not defined
 ---- Section .bss -------------------------------------------------------------
 
 class:     nobits
-length:                 618
-start:                 9600
+length:                 60D
+start:                 9800
 align:     not defined
 follows:   not defined
-vstart:                9600
+vstart:                9800
 valign:                   4
 vfollows:  not defined
 
@@ -69,108 +67,105 @@ vfollows:  not defined
 ---- Section .text ------------------------------------------------------------
 
 Real              Virtual           Name
-            9003              9003  putc
-            9008              9008  puts
-            9015              9015  puts.end
-            9016              9016  _puthex16
-            901F              901F  _puthex16.num
-            9026              9026  _puthexb
-            9034              9034  _puthexw
-            9044              9044  _puthexd
-            9055              9055  _clear_hexbuf
-            9068              9068  print_hexb
-            9085              9085  print_hexw
-            90A2              90A2  print_hexd
-            90BF              90BF  start
-            90E2              90E2  start.not_support
-            90EE              90EE  start.support
-            9121              9121  start.loop_find_entry
-            912C              912C  start.continue
-            9140              9140  start.loop_reread
-            9162              9162  start.not_found
-            916C              916C  start.found
-            91A8              91A8  start.read_cluster
-            9215              9215  start.read_fat
-            928B              928B  start.done
-            92A9              92A9  start.hang
-            92AC              92AC  read
-            92FA              92FA  read.wait
-            9315              9315  read_int
-            9346              9346  disk_packet
-            9348              9348  disk_packet.cnt
-            934A              934A  disk_packet.addr
-            934C              934C  disk_packet.seg
-            934E              934E  disk_packet.lba_l32
-            9352              9352  disk_packet.lba_h16
-            9356              9356  clear_pipe
-            9380              9380  fat_loc
-            9382              9382  data_loc
-            9384              9384  main
-            9393              9393  hang
-            93A3              93A3  hang.hang
+            9000              9000  start
+            9027              9027  clear_pipe
+            9054              9054  calculate_offset
+            9077              9077  _putc
+            907D              907D  _puts
+            908F              908F  _puts.done
+            9090              9090  _puthex
+            90AD              90AD  _puthex.loop
+            90B7              90B7  _puthex.digit
+            90BB              90BB  _puthex.alpha
+            90BD              90BD  _puthex.ok
+            90CE              90CE  putc
+            90D9              90D9  puts
+            90E4              90E4  puthex
+            90FB              90FB  flip
+            911A              911A  read
+            915A              915A  read.wait
+            9172              9172  read_int
+            91AE              91AE  disk_packet
+            91B0              91B0  disk_packet.cnt
+            91B2              91B2  disk_packet.addr
+            91B4              91B4  disk_packet.seg
+            91B6              91B6  disk_packet.lba_l32
+            91BA              91BA  disk_packet.lba_h16
+            91BE              91BE  fat_loc
+            91C0              91C0  data_loc
+            91C2              91C2  main
+            92AD              92AD  main.find_kernel_reread
+            92C6              92C6  main.next_entry
+            92DE              92DE  main.cmp
+            92F9              92F9  main.break
+            931E              931E  main.break_found
+            93E2              93E2  main.load_kernel
+            948C              948C  hang
+            949C              949C  hang.hang
+
+---- Section .data ------------------------------------------------------------
+
+Real              Virtual           Name
+            94A0              94A0  ..@4.string
+            94A7              94A7  ..@9.string
+            94B5              94B5  ..@14.string
+            94C4              94C4  ..@19.string
+            94D5              94D5  ..@23.string
+            94E2              94E2  ..@27.string
+            94ED              94ED  ..@32.string
+            94FB              94FB  ..@37.string
+            9507              9507  drive
 
 ---- Section .rodata ----------------------------------------------------------
 
 Real              Virtual           Name
-            9400              9400  ..@6.string
-            9410              9410  ..@10.string
-            9425              9425  ..@15.string
-            943A              943A  ..@20.string
-            944E              944E  ..@25.string
-            9461              9461  ..@30.string
-            946E              946E  hang.end
-            946F              946F  gdt
-            946F              946F  gdt_null
-            9477              9477  gdt_code
-            947F              947F  gdt_data
-            9487              9487  gdt_end
-            9487              9487  gdt_desc
-            948D              948D  ENDL
-            9490              9490  now_bootloader
-            94A4              94A4  lba_support
-            94B5              94B5  not_found
-            94C1              94C1  kernel_name
+            9600              9600  protected_mode_string
+            9617              9617  protected_mode_string.end
+            9618              9618  gdt
+            9618              9618  gdt_null
+            9620              9620  gdt_code
+            9628              9628  gdt_data
+            9630              9630  gdt_end
+            9630              9630  gdt_desc
+            9636              9636  kernel_name
+            9800              9800  end
 
 ---- Section .bss -------------------------------------------------------------
 
 Real              Virtual           Name
-            9600              9600  hexbuf
-            9610              9610  hexbuf.end
-            9611              9611  bootsect
-            9611              9611  bootsect.jmpcmd
-            9614              9614  bootsect.BS_OEMNAME
-            961C              961C  bootsect.BPB_BytsPerSec
-            961E              961E  bootsect.BPB_SecPerClus
-            961F              961F  bootsect.BPB_RsvdSecCnt
-            9621              9621  bootsect.BPB_NumFATs
-            9622              9622  bootsect.BPB_RootEntCnt
-            9624              9624  bootsect.BPB_TotSec16
-            9626              9626  bootsect.BPB_Media
-            9627              9627  bootsect.BPB_FATSz16
-            9629              9629  bootsect.BPB_SecPerTrk
-            962B              962B  bootsect.BPB_NumHeads
-            962D              962D  bootsect.BPB_HiddSec
-            9631              9631  bootsect.BPB_TotSec32
-            9635              9635  bootsect.BPB_FATSz32
-            9639              9639  bootsect.BPB_ExtFlags
-            963B              963B  bootsect.BPB_FSVer
-            963D              963D  bootsect.BPB_RootClus
-            9641              9641  bootsect.BPB_FSInfo
-            9643              9643  bootsect.BPB_BkBootSec
-            9645              9645  bootsect.BPB_Reserved
-            9651              9651  bootsect.BS_DrvNum
-            9652              9652  bootsect.BS_Reserved
-            9653              9653  bootsect.BS_BootSig
-            9654              9654  bootsect.BS_VolID
-            9658              9658  bootsect.BS_VolLab
-            9663              9663  bootsect.BS_FilSysType
-            966B              966B  bootsect.BS_BootCode32
-            980F              980F  bootsect.BS_BootSign
-            9811              9811  buffer
-            9811              9811  buffer.fat
-            9A11              9A11  buffer.data
-            9C11              9C11  disk
-            9C12              9C12  kernel_pointer
-            9C14              9C14  kernel_off_pointer
+            9800              9800  hexbuf
+            9809              9809  bootsect
+            9809              9809  bootsect.jmpcmd
+            980C              980C  bootsect.BS_OEMNAME
+            9814              9814  bootsect.BPB_BytsPerSec
+            9816              9816  bootsect.BPB_SecPerClus
+            9817              9817  bootsect.BPB_RsvdSecCnt
+            9819              9819  bootsect.BPB_NumFATs
+            981A              981A  bootsect.BPB_RootEntCnt
+            981C              981C  bootsect.BPB_TotSec16
+            981E              981E  bootsect.BPB_Media
+            981F              981F  bootsect.BPB_FATSz16
+            9821              9821  bootsect.BPB_SecPerTrk
+            9823              9823  bootsect.BPB_NumHeads
+            9825              9825  bootsect.BPB_HiddSec
+            9829              9829  bootsect.BPB_TotSec32
+            982D              982D  bootsect.BPB_FATSz32
+            9831              9831  bootsect.BPB_ExtFlags
+            9833              9833  bootsect.BPB_FSVer
+            9835              9835  bootsect.BPB_RootClus
+            9839              9839  bootsect.BPB_FSInfo
+            983B              983B  bootsect.BPB_BkBootSec
+            983D              983D  bootsect.BPB_Reserved
+            9849              9849  bootsect.BS_DrvNum
+            984A              984A  bootsect.BS_Reserved
+            984B              984B  bootsect.BS_BootSig
+            984C              984C  bootsect.BS_VolID
+            9850              9850  bootsect.BS_VolLab
+            985B              985B  bootsect.BS_FilSysType
+            9863              9863  bootsect.BS_BootCode32
+            9A07              9A07  bootsect.BS_BootSign
+            9A09              9A09  buffer
+            9A09              9A09  buffer.fat
+            9C09              9C09  buffer.data
+            9E09              9E09  kernel_cluster
 
->>>>>>> main

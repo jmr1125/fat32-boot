@@ -5,120 +5,128 @@
 	%define trap
 	%endif
 
-putc:
-mov ah,0x0e
-int 0x10
-ret
-puts:
-lodsb
-or al,al
-jz .end
-mov ah,0x0e
-mov bh,0
-int 0x10
-jmp puts
-.end:
-ret
 
-;; edi = buffer
-;; al = value
-_puthex16:
-pusha
-and al,0xf
-cmp al,10
-jl .num
-add al, 'A'-10-'0'
-.num:
-add al, '0'
-mov [edi], al
-popa
-ret
+	;; cx - x
+	;; bx - y
+	;; ebx - offset
 
-_puthexb:
-pusha
-	call _puthex16
-	dec edi
-shr al, 4
-call _puthex16
-popa
-ret
+calculate_offset:
+	shl  ebx,16
+	shr  ebx,16
+	shl  ecx,16
+	shr  ecx,16
+	shl  esi,16
+	shr  esi,16
+	imul ecx, ecx, 80*2
+	shl  ebx, 1
+	add  ebx, ecx
+	add  ebx, 0xb8000
+	ret
+	;; ebx - offset
+	;; al - char
+	;; ah - attr
 
-_puthexw:
-pusha
-	call _puthexb
-	sub edi, 2
-shr ax, 8
-call _puthexb
-popa
-ret
+_putc:
+	mov [ebx], al
+	mov [1+ebx], ah
+	ret
+	;; esi - string
+	;; ebx - offset
+	;; ah - attr
 
-_puthexd:
-pusha
-	call _puthexw
-	sub edi, 4
-shr eax, 16
-call _puthexw
-popa
-ret
+_puts:
+	mov al, [esi]
+	or  al, al
+	jz  .done
+	mov [ebx], al
+	mov [ebx+1], ah
+	add bx, 2
+	inc esi
+	jmp _puts
 
-	section .bss
-hexbuf: times 16 db ?
-.end: db ?
-	section .text
-_clear_hexbuf:
+.done:
+	ret
+	;; edx - integer
+	;; bx - offset
+
+_puthex:
 	pusha
+	mov ecx, 8
+	mov al, '0'
 	mov edi, hexbuf
-	mov ecx, 16
-	mov al,'0'
 	rep stosb
+	mov BYTE[hexbuf+8], 0
 	popa
-	ret
-
-print_hexb:
 	pusha
-	call _clear_hexbuf
-	mov edi, hexbuf+2-1
-	call _puthexb
-	mov esi, hexbuf
-	mov [hexbuf+2], byte 0
-	call puts
+	mov edi, 7
+
+.loop:
+	mov al, dl
+	and al, 0xf
+	cmp al, 10
+	jl  .digit
+	jg  .alpha
+
+.digit:
+	add al, '0'
+	jmp .ok
+
+.alpha:
+	add al, 'A'-10
+
+.ok:
+	mov [hexbuf+edi], al
+	shr edx, 4
+	dec edi
+	cmp edi, 0
+	jge .loop
 	popa
 	ret
 
-print_hexw:
+putc:
+	call calculate_offset
+	call _putc
+	ret
+
+puts:
+	call calculate_offset
+	call _puts
+	ret
+
+puthex:
+	call calculate_offset
 	pusha
-	call _clear_hexbuf
-	mov edi, hexbuf+4-1
-	call _puthexw
-	mov esi, hexbuf
-	mov [hexbuf+4], byte 0
-	call puts
+	call _puthex
 	popa
+	mov  esi, hexbuf
+	call _puts
+	ret
+	;; eax - lines
+
+flip:
+	mov edi, 0xb8000
+	mov ecx, 80*2
+	mul ecx
+	lea esi, [eax+edi]
+	mov ecx, 80*2*25
+	rep movsb
+	mov ecx, esi
+	sub ecx, edi
+	mov al,0
+	rep stosb
 	ret
 
-print_hexd:
-	pusha
-	call _clear_hexbuf
-	mov edi, hexbuf+8-1
-	call _puthexd
-	mov esi, hexbuf
-	mov [hexbuf+8], byte 0
-	call puts
-	popa
-	ret
+	%macro scr_move 2
+	mov    ecx, %1
+	mov    ebx, %2
+	%endmacro
 
-	
-
-%macro printaddr 1
-pusha
-mov esi, %1
-call puts
-popa
-%endmacro
-
-%macro print 1+
-section .rodata
-%%string: db %1, 0
-section .text
-printaddr %%string
-%endmacro
+	%macro   print 4
+	section  .data
+	%%string db %4, 0
+	section  .text
+	scr_move %1, %2
+	mov      ah, %3
+	mov      esi, %%string
+	call     puts
+	%endmacro
