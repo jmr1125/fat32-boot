@@ -1,38 +1,46 @@
-%ifidn __?OUTPUT_FORMAT?__,bin
-	org     0x9000
-	[map    all bootloader.map]
+%ifidn   __?OUTPUT_FORMAT?__, bin
+org      0x9000
+[map     all bootloader.map]
 %endif
-section .text
+section  .text
 %include "config.inc"
-global  start
-global  main
+global   start
+global   main
 
 %ifdef   DEBUG
 %warning "DEBUG IS ON"
 %endif
-
 
 start:
 	[BITS 16]; We need 16-bit intructions for Real mode
 
 	mov [drive], dl
 
-	sidt [realm_idt]; Save IDT
-	sgdt [realm_gdt]; Save GDT
-	
-	cli ; Disable interrupts, we want to be alone
+	;;;  set up vesa
+	clc
+	lea  di, VesaInfoBlockBuffer1
+	mov  ax, 0x4f00
+	int  10h
+	cmp  ax, 0x004f
+	jne  hang
+	mov  di, VesaModeInfoBlockBuffer1
+	mov  cx, 0x4118
+	mov  ax, 0x4f01
+	int  10h
+	cmp  al, 0x4f
+	jne  hang
 
-	xor ax, ax
-	mov ds, ax; Set DS-register to 0 - used by lgdt
 
-	lgdt [gdt_desc]; Load the GDT descriptor
-
-	mov eax, cr0; Copy the contents of CR0 into EAX
-	or  eax, 1; Set bit 0
-	mov cr0, eax; Copy the contents of EAX into CR0
+	mov  ax, 0x4f02
+	mov  bx, 0x4118
+	int  10h
+	cmp  al, 0x4f
+	jne  hang
+;;;  end
+	call setup_pmode
 
 	jmp 08h:clear_pipe; Jump to code segment, offset clear_pipe
-
+%include "pmode.inc"
 	[BITS 32]; We now need 32-bit instructions
 
 clear_pipe:
@@ -45,14 +53,26 @@ clear_pipe:
 	mov esp, 090000h; Move the stack pointer to 090000h
 	mov ebp, 090000h; Move the base pointer to 090000h
 
+	;;  move vesa infos to the right place
+	;; vesa info block
+	mov edi,VesaInfoBlockBuffer
+	mov esi,VesaInfoBlockBuffer1
+	mov ecx, 512
+	rep movsb
+	;; vesa mode info block
+	mov edi,VesaModeInfoBlockBuffer
+	mov esi,VesaModeInfoBlockBuffer1
+	mov ecx, 256
+	rep movsb
 	;;  clear the screen
 	mov edi, 0xb8000
 	mov ecx, 80*25*2
 	mov al, 0
 	rep stosb
 	jmp main
-	cli
-	hlt
+cli
+hlt
+
 %include "basic32.inc"
 %include "disk.inc"
 %include "res.img.inc"
@@ -183,7 +203,8 @@ main:
 	mov  cl, 1
 	mov  edi, bootsect
 	call read
-	mov   edi, kernel_off
+	mov  edi, kernel_off
+
 .load_kernel:
 	;;    read data
 	mov   eax, [kernel_cluster]
@@ -193,7 +214,7 @@ main:
 	mov   cl, [bootsect.BPB_SecPerClus]
 	mul   ecx
 	xor   ecx, ecx
-	mov cx,[data_loc]
+	mov   cx, [data_loc]
 	add   ax, cx
 	xor   ecx, ecx
 	mov   cl, [bootsect.BPB_SecPerClus]
@@ -201,10 +222,10 @@ main:
 	;;    read fat
 	push  edi
 	xor   edx, edx
-	;; 512/(32/8)=128 eax = cluster containing fat32 value
+	;;    512/(32/8)=128 eax = cluster containing fat32 value
 	shr   eax, 7
-	xor   ecx,ecx
-	mov cx,[fat_loc]
+	xor   ecx, ecx
+	mov   cx, [fat_loc]
 	add   eax, ecx
 	mov   cl, 1
 	mov   edi, buffer.fat
@@ -215,17 +236,18 @@ main:
 	mov   edx, [kernel_cluster]
 	call  puthex
 	mov   eax, 1
-	push edi
+	push  edi
 	call  flip
-	pop edi
-	mov eax, [kernel_cluster]
-	and eax, 0x3f		;mod 128
-	mov eax, [buffer.fat+eax*4]
-	mov [kernel_cluster], eax
-	and eax, 0x0fffffff
-	cmp eax, 0x0ffffff8
-	jl .load_kernel
-	jmp kernel_off
+	pop   edi
+	mov   eax, [kernel_cluster]
+	and   eax, 0x3f; mod 128
+	mov   eax, [buffer.fat+eax*4]
+	mov   [kernel_cluster], eax
+	and   eax, 0x0fffffff
+	cmp   eax, 0x0ffffff8
+	jl    .load_kernel
+	jmp   kernel_off
+
 hang:
 	mov dx, 0xe9
 	mov al, 'h'
@@ -282,8 +304,21 @@ gdt:
 
 	kernel_name: db 'KERNEL      ',0xff
 
-	times 100 db 0x88
-	align 512 ,db 0x89
+	times    100 db 0x88
+	align    512, db 0x89
+	%include "vesa.inc"
+	ALIGN(4)
+
+VesaInfoBlockBuffer1:
+	istruc VesaInfoBlock
+	at     VesaInfoBlock.Signature, db "VESA"
+	ALIGN(4)
+
+VesaModeInfoBlockBuffer1:
+	istruc VesaModeInfoBlock
+	times  VesaModeInfoBlock_size db 0
+	iend
+
 end:
 
 	section .bss
@@ -333,4 +368,4 @@ buffer:
 
 .data:
 	times 512 db ?
-	kernel_cluster: dd ?
+kernel_cluster: dd ?

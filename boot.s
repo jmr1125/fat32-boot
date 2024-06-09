@@ -1,8 +1,9 @@
-%ifidn __?OUTPUT_FORMAT?__,bin
-	[map all boot.map]
-	org 0x7c00
-	%endif
+%ifidn  __?OUTPUT_FORMAT?__, bin
+[map    all boot.map]
+org     0x7c00
+%endif
 %define kernel_code 0x9000
+
 bootsector:
 jmpcmd:
 	db 0
@@ -36,9 +37,10 @@ BPB_Reserved:
 	BS_VolID: dd 0         ; off=0x43
 
 BS_VolLab:
-	times 11 db 0; off=0x47
+	times  11 db 0; off=0x47
 	BS_FilSysType: db 'FAT32', 0, 0, 0 ; off=0x52
-global main
+	global main
+
 code:
 	bits 16
 
@@ -80,65 +82,66 @@ main:
 	cmp      si, 11
 	jl       .cmp
 	;;       found
-	mov si,bx
+	mov      si, bx
 	jmp      .end2
 
 .break:
 	add bx, 32
 	jmp .loop1
 
-	.end1:
-	;; 
+.end1:
+	
 	mov  bx, not_found
 	call puts
-	jmp hlt
-	.end2:
+	jmp  hlt
+
+.end2:
 	mov  bx, not_found+4
 	call puts
-	mov WORD [kernel_pointer],kernel_code
-	xor ebx, ebx
-	mov bx, [si+0x14]
-	shl ebx, 16
-	mov bx, [si+0x1a]
+	mov  WORD [kernel_pointer], kernel_code
+	xor  ebx, ebx
+	mov  bx, [si+0x14]
+	shl  ebx, 16
+	mov  bx, [si+0x1a]
 
-
-	.read_kernel:
-	;; bx - cluster to read
+.read_kernel:
+	;;   bx - cluster to read
 	push bx
 
 	sub bx, 2
 	mov ax, bx
 	mul BYTE [BPB_SecPerClus]
-	add ax,[data_loc]
+	add ax, [data_loc]
 
-	mov cl, [BPB_SecPerClus]
-	mov dl, [DrvNum]
-	mov bx, [kernel_pointer]
+	mov  cl, [BPB_SecPerClus]
+	mov  dl, [DrvNum]
+	mov  bx, [kernel_pointer]
 	call disk_read
-	mov ax, [BPB_SecPerClus]
-	mul WORD [BPB_BytsPerSec]
-	add [kernel_pointer], ax
+	mov  ax, [BPB_SecPerClus]
+	mul  WORD [BPB_BytsPerSec]
+	add  [kernel_pointer], ax
 
 	pop bx
 
 	push bx
-	shl bx, 2
-	mov eax,[buf_fat+bx]
-	pop bx
+	shl  bx, 2
+	mov  eax, [buf_fat+bx]
+	pop  bx
 
 	and eax, 0x0fffffff
 	cmp eax, 0xFFFFFF8
 	jge .end3
-	mov bx,ax
-	
+	mov bx, ax
+
 	jmp .read_kernel
 
-	.end3:
-	;; mov ax, es
-	;; shl ax, 4
-	;; add ax, kernel_code
+.end3:
+	;;  mov ax, es
+	;;  shl ax, 4
+	;;  add ax, kernel_code
 	mov BYTE dl, [DrvNum]
 	jmp kernel_code
+
 hlt:
 	hlt
 	jmp hlt
@@ -177,14 +180,12 @@ lba_to_chs:
 	pop ax
 	ret
 
-	
 	; Reads sectors from a disk
 	; Parameters:
 	; - ax: LBA address
 	; - cl: number of sectors to read (up to 128)
 	; - dl: drive number
 	; - es:bx: memory address where to store read data
-	
 
 disk_read:
 
@@ -245,4 +246,4 @@ db     ?
 DrvNum db ?
 buf_fat resb 512
 buf_data resb 512
-kernel_pointer:	resb	4
+kernel_pointer: resb 4

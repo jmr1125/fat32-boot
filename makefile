@@ -1,5 +1,7 @@
 CXXFLAGS=-std=c++20
-KERNEL_OFF=0x10000
+KERNEL_OFF=0x20000
+VesaInfoBlockBufferOff=0x10000
+VesaModeInfoBlockBufferOff=0x10200
 all: readfat res.img
 readfat: read.cpp fat32.hpp
 	clang++ read.cpp $(CXXFLAGS) -g -o readfat
@@ -16,8 +18,8 @@ bootloader: bootloader.asm basic32.inc disk.inc
 	nasm bootloader.asm -felf32 -o bootloader.elf -g # -DDEBUG
 kernel.o: kernel.asm
 	nasm kernel.asm -felf32 -o kernel.o -g
-res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o v86.o
-	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o v86.o -o res.o
+res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o
+	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld -o res.o kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o
 res: res.o
 	x86_64-elf-objcopy -O binary res.o res
 res.img: boot writefat touch.txt bootloader res
@@ -43,18 +45,17 @@ always:
 	echo file:/KERNEL/`stat -f %z res` >> touch.txt
 	echo "// generate by makefile" > config.h
 	echo "#define kernel_off $(KERNEL_OFF)" >> config.h
-	echo "#define realm_idt 0x9f00" >> config.h
-	echo "#define realm_gdt 0x9f00" >> config.h
+	echo "#define LFB_varible_addr $(LFB_VARIBLE_ADDR)" >> config.h
+	echo "#define VesaInfoBlockBuffer $(VesaInfoBlockBufferOff)" >> config.h
+	echo "#define VesaModeInfoBlockBuffer $(VesaModeInfoBlockBufferOff)" >> config.h
 	echo ";; generate by makefile" > config.inc
 	echo "%define kernel_off $(KERNEL_OFF)" >> config.inc
-	echo "%define realm_idt 0x9f00" >> config.inc
-	echo "%define realm_gdt 0x9f00" >> config.inc
+	echo "%define VesaInfoBlockBuffer $(VesaInfoBlockBufferOff)" >> config.inc
+	echo "%define VesaModeInfoBlockBuffer $(VesaModeInfoBlockBufferOff)" >> config.inc
 
 
 
-v86.o: v86.asm v86_func.h
-	nasm v86.asm -felf32 -ov86.o
-c_kernel.o: kernel.cpp stdio.h port.h v86_func.h
+c_kernel.o: kernel.cpp stdio.h port.h to_call_int.h
 	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o c_kernel.o kernel.cpp
 stdio.o: stdio.cpp
 	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o stdio.o stdio.cpp
@@ -69,9 +70,9 @@ pci.c.o: pci.cpp
 	$(COMPILE) pci.c.o pci.cpp
 vbe.c.o: vbe.cpp
 	$(COMPILE) vbe.c.o vbe.cpp
-v86_func_generator: v86_func_generator.cpp
-	clang++ -o v86_func_generator v86_func_generator.cpp
-v86_func: v86_func.asm
-	nasm -fbin v86_func.asm -o v86_func
-v86_func.h: v86_func_generator v86_func
-	./v86_func_generator > v86_func.h
+file2symbolc: file2symbolc.cpp
+	clang++ -o file2symbolc file2symbolc.cpp
+to_call_int: to_call_int.asm
+	nasm -fbin -o to_call_int to_call_int.asm
+to_call_int.h: to_call_int file2symbolc
+	./file2symbolc to_call_int to_call_int > to_call_int.h
