@@ -18,8 +18,8 @@ bootloader: bootloader.asm basic32.inc disk.inc
 	nasm bootloader.asm -felf32 -o bootloader.elf -g # -DDEBUG
 kernel.o: kernel.asm
 	nasm kernel.asm -felf32 -o kernel.o -g
-res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o
-	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld -o res.o kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o
+res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o ps2mouse.o port.o font.o
+	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld -o res.o kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o ps2mouse.o port.o font.o
 res: res.o
 	x86_64-elf-objcopy -O binary res.o res
 res.img: boot writefat touch.txt bootloader res
@@ -70,9 +70,13 @@ pci.c.o: pci.cpp
 	$(COMPILE) pci.c.o pci.cpp
 vbe.c.o: vbe.cpp
 	$(COMPILE) vbe.c.o vbe.cpp
+ps2mouse.o: ps2mouse.cpp
+	$(COMPILE) ps2mouse.o ps2mouse.cpp
 file2symbolc: file2symbolc.cpp
 	clang++ -o file2symbolc file2symbolc.cpp
 to_call_int: to_call_int.asm
 	nasm -fbin -o to_call_int to_call_int.asm
 to_call_int.h: to_call_int file2symbolc
 	./file2symbolc to_call_int to_call_int > to_call_int.h
+font.o:font.c
+	$(COMPILE) font.o font.c
