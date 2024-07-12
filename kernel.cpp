@@ -43,9 +43,10 @@ void k_main() {
   mouse_install();
   int x = 100, y = 100;
   while (true) {
-    draw(' ', y, x, lfb, pitch, bpp, 1);
-    draw('x', mouse_dy, mouse_dx, lfb, pitch, bpp, 1);
+    draw('x', y, x, lfb, pitch, bpp, 1);
     y += mouse_dy;
     x += mouse_dx;
+    mouse_dx = 0;
+    mouse_dy = 0;
   }
 }

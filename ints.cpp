@@ -87,32 +87,61 @@ void irq10() { print("irq10\n"); }
 void irq11() { print("irq11\n"); }
 #include "ps2mouse.h"
 void irq12() {
-  static int bytes[3];
-  static int bytes_count = 0;
+  static int bytes[128];
+  static int bytes_count = 0, i = 0;
   print("irq12\n");
   char c = inb(0x60);
   bytes[bytes_count++] = c;
-  if (bytes_count == 3) {
-    mouse_dx += bytes[1];
-    mouse_dy -= bytes[2];
-    bytes_count = 0;
-    for (int i = 0; i < 3; ++i) {
-      char c = bytes[i];
-      for (int i = 7; i >= 0; --i) {
-        if (c & (1 << i)) {
-          print("1");
-        } else {
-          print("0");
-        }
+  bytes_count %= 128;
+  ++i;
+  if (i == 3) {
+    i = 0;
+    char c3, c2, c1;
+    if (bytes_count - 1 < 0) {
+      c3 = bytes[bytes_count - 1 + 128];
+    } else {
+      c3 = bytes[bytes_count - 1];
+    }
+    if (bytes_count - 2 < 0) {
+      c2 = bytes[bytes_count - 2 + 128];
+    } else {
+      c2 = bytes[bytes_count - 2];
+    }
+    if (bytes_count - 3 < 0) {
+      c1 = bytes[bytes_count - 3 + 128];
+    } else {
+      c1 = bytes[bytes_count - 3];
+    }
+    print("c1: ");
+    for (int i = 7; i >= 0; --i) {
+      if (c1 & (1 << i)) {
+        print("1");
+      } else {
+        print("0");
       }
-      print("\n");
+    }
+    print("\nc2: ");
+    for (int i = 7; i >= 0; --i) {
+      if (c2 & (1 << i)) {
+        print("1");
+      } else {
+        print("0");
+      }
+    }
+    print("\nc3: ");
+    for (int i = 7; i >= 0; --i) {
+      if (c3 & (1 << i)) {
+        print("1");
+      } else {
+        print("0");
+      }
     }
     print("\n");
-    print("\n");
-    if (!(bytes[0] & 0b0001000)) {
-      print("error\n");
-      ++bytes_count;
+    if ((c1 & 0b00001000) == 0) {
+      i = -1;
     }
+    mouse_dx = c2;
+    mouse_dy = -c3;
   }
 }
 void irq13() { print("irq13\n"); }
