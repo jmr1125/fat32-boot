@@ -46,19 +46,34 @@ and eax, 0x0fffffff
 	ret
 
 read_int:
+.loop:
+call read_int_1sector
+add edi, 512
+inc eax
+dec cl
+jnz .loop
+ret
+
+read_int_1sector:
+pusha
 mov [disk_packet.lba_l32], eax
 mov DWORD [disk_packet.lba_h16], 0
-mov [disk_packet.cnt], cl
-mov [disk_packet.addr], di
-mov [disk_packet.seg], ds
-pusha
-shr edi, 16
-shl edi, 12
-add [disk_packet.seg], edi
-popa
+mov WORD [disk_packet.cnt], 1
+mov WORD [disk_packet.addr], tmp_buffer
+mov WORD [disk_packet.seg], 0
 lea si, [disk_packet]
 mov ah, 0x42
 int 0x13
+mov esi, tmp_buffer
+mov ecx, 512
+.loop:
+mov al, [esi]
+mov [edi], al
+inc esi
+inc edi
+dec ecx
+jnz .loop
+popa
 ret
 
 

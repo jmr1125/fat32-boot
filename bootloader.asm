@@ -1,27 +1,207 @@
-%ifidn   __?OUTPUT_FORMAT?__, bin
-org      0x9000
-[map     all bootloader.map]
-%endif
-section  .text
+%ifidn __?OUTPUT_FORMAT?__,bin
+	org     0x9000
+	[map    all bootloader.map]
+	%endif
+
 %include "config.inc"
-global   start
-global   main
+	%define endl 0x0d, 0x0a
+section .text
+global  start
+global  main
 
 %ifdef   DEBUG
 %warning "DEBUG IS ON"
 %endif
 
+jmp start
+%include "basic32.inc"
 start:
 	[BITS 16]; We need 16-bit intructions for Real mode
+	;; enter unreal mode
+	xor ax,ax
+	mov ds,ax
+	mov ss,ax
+	push ds
+	cli
+	lgdt [unreal_gdtinfo]
+	mov eax,cr0
+	or al,1
+	mov cr0,eax
+	jmp 0x8:.pmode
+	.pmode:
+	mov bx,0x10
+	mov ds,bx
+	and al,0xfe
+	mov cr0,eax
+	jmp 0:.unreal
+	.unreal:
+	pop ds
+	sti	
+	;; we are at unreal mode
+	mov [disk], dl
+	mov esi, ENDL
+	call puts
+	mov esi, now_bootloader
+	call puts
+	mov ah,0x41
+	mov bx,0x55aa
+	mov dl,0x80
+	int 0x13
+	jc .not_support
+	jmp .support
+	.not_support:
+	mov esi, lba_support
+	call puts
+	jmp .hang
+	.support:
+	mov esi, lba_support+3
+	call puts
+	
+	print "read bootsect",endl
+	mov eax, 0
+	mov cl, 1
+	mov edi, bootsect
+	mov dl, [disk]
+	call read_int
 
-	mov [drive], dl
+	xor eax, eax
+	mov ax, [data_loc]
+	push eax
+	jmp .loop_reread
 
-	;;;  set up vesa
-	clc
-	call setup_pmode
+	.loop_find_entry:
+	or BYTE [si], 0
+	jz .not_found
+	
+	push si
+	push di
+	lea di,[kernel_name]
+	.continue:
+	cmpsb
+	je .continue
+	cmp di,12+kernel_name
+	pop di
+	pop si
+	jge .found
+
+	add si, 32
+	cmp si, 512+buffer.data
+	jl .loop_find_entry
+	.loop_reread:
+	mov cl,1
+	mov edi, buffer.data
+	pop eax
+	push eax
+	mov dl, [disk]
+	call read_int
+	pop eax
+	add eax, 512
+	push eax
+	mov si, buffer.data
+	jmp .loop_find_entry
+
+	.not_found:
+	mov esi, not_found
+	call puts
+	hlt
+	.found:
+	pop eax
+	push si
+	mov esi, not_found+4
+	call puts
+	pop si
+	mov ax,[si+20]
+	shl eax,16
+	mov ax,[si+26]
+
+	mov [kernel_pointer], ax
+	print "kernel at cluster 0x"
+
+	call print_hexw
+
+	printaddr ENDL
+
+	mov DWORD [kernel_off_pointer], kernel_off
+	.read_cluster:
+	mov ax, [kernel_pointer]
+	pusha
+	;; ax - cluster num
+	print "data read cluster 0x"
+	call print_hexw
+	printaddr ENDL
+	sub ax, 2
+	xor bx,bx
+	mov bl,[bootsect.BPB_SecPerClus]
+	imul ax, bx
+	add ax,[data_loc]
+	print "data read sector 0x"
+	call print_hexw
+	printaddr ENDL
+	mov cl, [bootsect.BPB_SecPerClus]
+	mov edi, [kernel_off_pointer]
+	mov dl, [disk]
+	trap
+	call read_int
+	xor bx, bx
+	mov bx, [bootsect.BPB_SecPerClus]
+	imul bx, [bootsect.BPB_BytsPerSec]
+	add [kernel_off_pointer], bx
+	popa
+	.read_fat:
+	pusha
+	;; ax*4/512
+	shr ax, 7
+	add ax, [fat_loc]
+	print "fat read sector 0x"
+	call print_hexw
+	printaddr ENDL
+	mov cl, 1
+	mov edi, buffer.fat
+	mov dl, [disk]
+	call read_int
+	popa
+	pusha
+	mov bx,ax
+	;; (bx*4) mod 512
+	shl bx,2
+	and ebx, 0x1ff
+	mov eax,[buffer.fat+ebx]
+	and eax, 0x0fffffff
+	cmp eax,0x0ffffff8
+	jge .done
+	print "fat value 0x"
+	pusha
+	call print_hexd
+	popa
+	printaddr ENDL
+	
+	mov [kernel_pointer],ax
+	popa
+	jmp .read_cluster
+	.done:
+	popa
+	
+	mov ax, 0x13
+	int 0x10
+
+
+
+	xor ax, ax
+	mov ds, ax; Set DS-register to 0 - used by lgdt
+
+	lgdt [gdt_desc]; Load the GDT descriptor
+
+	mov eax, cr0; Copy the contents of CR0 into EAX
+	or  eax, 1; Set bit 0
+	mov cr0, eax; Copy the contents of EAX into CR0
 
 	jmp 08h:clear_pipe; Jump to code segment, offset clear_pipe
-%include "pmode.inc"
+	.hang:
+	hlt
+	jmp .hang
+	
+
+%include "disk.inc"
 	[BITS 32]; We now need 32-bit instructions
 
 clear_pipe:
@@ -40,184 +220,14 @@ clear_pipe:
 	mov al, 0
 	rep stosb
 	jmp main
-cli
-hlt
-
-%include "basic32.inc"
-%include "disk.inc"
+	cli
+	hlt
 %include "res.img.inc"
 
 main:
-	mov  esi, protected_mode_string
-	mov  ecx, 23
-	mov  ebx, 0
-	mov  ah, 0x0f
-	call puts
-	mov  eax, 1
-	call flip
-
-	print 23, 1, 0x0f, "drive:"
-	scr_move 23,8
-	mov   edx, [drive]
-	and   edx, 0xff
-	call  puthex
-	mov   eax, 1
-	call  flip
-
-	xor   edx, edx
-	print 23, 1, 0x0f, "fat location:"
-	scr_move 23,14
-	mov   dx, [fat_loc]
-	call  puthex
-	mov   eax, 1
-	call  flip
 	trap
-	print 23, 1, 0x0f, "data location:"
-	scr_move 23,15
-	mov   dx, [data_loc]
-	call  puthex
-	mov   eax, 1
-	call  flip
-
-	mov  ax, 0
-	;;   clear buffer
-	mov  ecx, 512
-	mov  al, 0
-	mov  edi, buffer.data
-	rep  stosb
-	mov  edi, buffer.fat
-	rep  stosb
-	xor  eax, eax
-	push WORD [data_loc]
-
-.find_kernel_reread:
-	;;   read_data
-	pop  ax
-	mov  cl, 1
-	mov  edi, buffer.data
-	push eax
-	call read
-	pop  eax
-	inc  ax
-	mov  esi, 0
-	push ax
-
-.next_entry:
-	or BYTE [buffer.data+esi], 0
-	jz .break
-
-	;;   strcmp
-	push esi
-	push edi
-	mov  edi, kernel_name
-	lea  esi, [buffer.data+esi]
-	;;   repe cmpsb; why failed
-	dec  esi
-	dec  edi
-
-.cmp:
-	;;  inc esi
-	;;  inc edi
-	cmpsb
-	je  .cmp
-	mov al, [edi-1]
-	pop edi
-	pop esi
-
-	cmp  al, 0xff
-	push esi
-	je   .break_found; found
-	pop  esi
-	add  si, 32
-	cmp  si, 512
-	je   .find_kernel_reread
-	jmp  .next_entry
-
-.break:
-	print 23, 1, 0x0f, "kernel not found"
-	mov   eax, 1
-	call  flip
-	jmp   hang
-
-.break_found:
-	print 23, 1, 0x0f, "kernel found"
-	mov   eax, 1
-	call  flip
-
-	print 23, 1, 0x0f, "offset: 0x"
-	scr_move 23,12
-	pop   edx
-	mov   [kernel_cluster], edx
-	call  puthex
-	mov   eax, 1
-	call  flip
-
-	print 23, 1, 0x0f, "sector: data+"
-	scr_move 23,15
-	xor   edx, edx
-	pop   dx
-	dec   dx
-	sub   dx, [data_loc]
-	call  puthex
-	mov   eax, 1
-	call  flip
-
-	mov ebx, [kernel_cluster]
-	lea ebx, [buffer.data+ebx]; kernel file entry
-	mov ax, [ebx+20]; H16 cluster
-	shl eax, 16
-	mov ax, [ebx+26]; L16 cluster
-	mov [kernel_cluster], eax
-
-	mov  eax, 0x00000000
-	mov  cl, 1
-	mov  edi, bootsect
-	call read
-	mov  edi, kernel_off
-
-.load_kernel:
-	;;    read data
-	mov   eax, [kernel_cluster]
-	push  eax
-	sub   eax, 2
-	xor   ecx, ecx
-	mov   cl, [bootsect.BPB_SecPerClus]
-	mul   ecx
-	xor   ecx, ecx
-	mov   cx, [data_loc]
-	add   ax, cx
-	xor   ecx, ecx
-	mov   cl, [bootsect.BPB_SecPerClus]
-	call  read
-	;;    read fat
-	push  edi
-	xor   edx, edx
-	;;    512/(32/8)=128 eax = cluster containing fat32 value
-	shr   eax, 7
-	xor   ecx, ecx
-	mov   cx, [fat_loc]
-	add   eax, ecx
-	mov   cl, 1
-	mov   edi, buffer.fat
-	call  read
-	pop   edi
-	print 23, 1, 0x0f, "cluster: 0x"
-	scr_move 23,12
-	mov   edx, [kernel_cluster]
-	call  puthex
-	mov   eax, 1
-	push  edi
-	call  flip
-	pop   edi
-	mov   eax, [kernel_cluster]
-	and   eax, 0x3f; mod 128
-	mov   eax, [buffer.fat+eax*4]
-	mov   [kernel_cluster], eax
-	and   eax, 0x0fffffff
-	cmp   eax, 0x0ffffff8
-	jl    .load_kernel
-	jmp   kernel_off
-
+	mov BYTE [0xa0000],0x0f
+	jmp kernel_off
 hang:
 	mov dx, 0xe9
 	mov al, 'h'
@@ -233,16 +243,19 @@ hang:
 	jmp hang.hang; Loop, self-jump
 section .data
 
-drive:
-	db      0
 	section .rodata
 
-protected_mode_string:
-	db '[PM] Protected Mode now'
 
 .end:
 	db 0
+unreal_gdtinfo:
+   dw unreal_gdt_end - unreal_gdt - 1   ;last byte in table
+   dd unreal_gdt                 ;start of table
 
+unreal_gdt:        dd 0,0        ; entry 0 is always unused
+codedesc:   db 0xff, 0xff, 0, 0, 0, 10011010b, 00000000b, 0
+flatdesc:   db 0xff, 0xff, 0, 0, 0, 10010010b, 11001111b, 0
+unreal_gdt_end:
 gdt:
 	; Address for the GDT
 
@@ -272,20 +285,17 @@ gdt:
 	dw gdt_end - gdt - 1; Limit (size)
 	dd gdt; Address of the GDT
 
+ENDL:	db endl,0
+now_bootloader: db 'Now in bootloader',endl,0
+lba_support: db 'NO LBA support',endl,0
+not_found:	db 'NOT found',endl,0
 	kernel_name: db 'KERNEL      ',0xff
 
-	times    100 db 0x88
-	align    512, db 0x89
-	%include "vesa.inc"
-	ALIGN(4)
-
-end:
+	times 100 db 0x88
+	align 512 ,db 0x89
 
 	section .bss
 
-hexbuf:
-	resb 8
-	db   ?
 
 bootsect:
 	.jmpcmd:db ?, ?, ?; off=0x0
@@ -328,4 +338,8 @@ buffer:
 
 .data:
 	times 512 db ?
-kernel_cluster: dd ?
+
+disk:	db ?
+kernel_pointer:	dw ?
+kernel_off_pointer:	dd ?
+tmp_buffer:	times 512 db ?
