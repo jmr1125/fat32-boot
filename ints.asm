@@ -1,7 +1,17 @@
-	%macro def_int 2
-	global int_%1
+	;; eax - number
+sendeoi:
+	cmp eax, 0x8
+	mov al,0x20
+	jle .pic1
+	out 0xa0,al
+	.pic1:
+	out 0x20,al
+	ret
+	;; define function %1 and call %2
+	%macro def 2
+	global %1
 	extern %2
-int_%1:
+%1:
 	pusha
 	push ds
 	push es
@@ -17,6 +27,15 @@ int_%1:
 	pop es
 	pop ds
 	popa
+	%endmacro
+	%macro def_int 2
+	def int_%1,%2
+	iret
+	%endmacro
+	%macro def_irq 2
+	def irq_%1,%2
+	mov eax,%1
+	call sendeoi
 	iret
 	%endmacro
 
@@ -39,3 +58,19 @@ int_%1:
 	def_int 17, int17
 	def_int 18, int18
 	def_int 19, int19
+	def_irq 0, irq0
+	def_irq 1, irq1
+	def_irq 2, irq2
+	def_irq 3, irq3
+	def_irq 4, irq4
+	def_irq 5, irq5
+	def_irq 6, irq6
+	def_irq 7, irq7
+	def_irq 8, irq8
+	def_irq 9, irq9
+	def_irq 10, irq10
+	def_irq 11, irq11
+	def_irq 12, irq12
+	def_irq 13, irq13
+	def_irq 14, irq14
+	def_irq 15, irq15

@@ -18,25 +18,6 @@ start:
 
 	;;;  set up vesa
 	clc
-	lea  di, VesaInfoBlockBuffer1
-	mov  ax, 0x4f00
-	int  10h
-	cmp  ax, 0x004f
-	jne  hang
-	mov  di, VesaModeInfoBlockBuffer1
-	mov  cx, 0x4118
-	mov  ax, 0x4f01
-	int  10h
-	cmp  al, 0x4f
-	jne  hang
-
-
-	mov  ax, 0x4f02
-	mov  bx, 0x4118
-	int  10h
-	cmp  al, 0x4f
-	jne  hang
-;;;  end
 	call setup_pmode
 
 	jmp 08h:clear_pipe; Jump to code segment, offset clear_pipe
@@ -53,17 +34,6 @@ clear_pipe:
 	mov esp, 090000h; Move the stack pointer to 090000h
 	mov ebp, 090000h; Move the base pointer to 090000h
 
-	;;  move vesa infos to the right place
-	;; vesa info block
-	mov edi,VesaInfoBlockBuffer
-	mov esi,VesaInfoBlockBuffer1
-	mov ecx, 512
-	rep movsb
-	;; vesa mode info block
-	mov edi,VesaModeInfoBlockBuffer
-	mov esi,VesaModeInfoBlockBuffer1
-	mov ecx, 256
-	rep movsb
 	;;  clear the screen
 	mov edi, 0xb8000
 	mov ecx, 80*25*2
@@ -308,16 +278,6 @@ gdt:
 	align    512, db 0x89
 	%include "vesa.inc"
 	ALIGN(4)
-
-VesaInfoBlockBuffer1:
-	istruc VesaInfoBlock
-	at     VesaInfoBlock.Signature, db "VESA"
-	ALIGN(4)
-
-VesaModeInfoBlockBuffer1:
-	istruc VesaModeInfoBlock
-	times  VesaModeInfoBlock_size db 0
-	iend
 
 end:
 

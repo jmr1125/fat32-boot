@@ -20,8 +20,6 @@ void PIC_remap(int offset1, int offset2) {
   a1 = inb(PIC1_DATA); // save masks
   a2 = inb(PIC2_DATA);
 
-  outb(PIC1_COMMAND, PIC_EOI);
-
   outb(PIC1_COMMAND,
        ICW1_INIT |
            ICW1_ICW4); // starts the initialization sequence (in cascade mode)
@@ -74,11 +72,6 @@ void IRQ_set_mask(uint8_t IRQline) {
 }
 
 void IRQ_clear_mask(uint8_t IRQline) {
-  if (IRQline == ALL) {
-    outb(PIC1_DATA, 0);
-    outb(PIC2_DATA, 0);
-    return;
-  }
   uint16_t port;
   uint8_t value;
 
@@ -139,6 +132,7 @@ void initialize_interrupts(void) {
   asm volatile("cli");
   PIC_remap(0x20, 0x28);
   IRQ_set_mask(ALL);
+  loadIDTR();
   addInt(0, int_0, 0);
   addInt(1, int_1, 0);
   addInt(2, int_2, 0);
@@ -158,6 +152,24 @@ void initialize_interrupts(void) {
   addInt(17, int_17, 0);
   addInt(18, int_18, 0);
   addInt(19, int_19, 0);
-  loadIDTR();
+  addInt(32, irq_0, 0);
+  addInt(33, irq_1, 0);
+  addInt(34, irq_2, 0);
+  addInt(35, irq_3, 0);
+  addInt(36, irq_4, 0);
+  addInt(37, irq_5, 0);
+  addInt(38, irq_6, 0);
+  addInt(39, irq_7, 0);
+  addInt(40, irq_8, 0);
+  addInt(41, irq_9, 0);
+  addInt(42, irq_10, 0);
+  addInt(43, irq_11, 0);
+  addInt(44, irq_12, 0);
+  addInt(45, irq_13, 0);
+  addInt(46, irq_14, 0);
+  addInt(47, irq_15, 0);
+  for (int i = 0; i < 16; ++i) {
+    IRQ_clear_mask(i);
+  }
   asm volatile("sti");
 }

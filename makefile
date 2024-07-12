@@ -1,7 +1,8 @@
 CXXFLAGS=-std=c++20
 KERNEL_OFF=0x20000
-VesaInfoBlockBufferOff=0x10000
-VesaModeInfoBlockBufferOff=0x10200
+REGS_OFF=0x10000
+VESA_OFF=0x10030
+
 all: readfat res.img
 readfat: read.cpp fat32.hpp
 	clang++ read.cpp $(CXXFLAGS) -g -o readfat
@@ -18,8 +19,8 @@ bootloader: bootloader.asm basic32.inc disk.inc
 	nasm bootloader.asm -felf32 -o bootloader.elf -g # -DDEBUG
 kernel.o: kernel.asm
 	nasm kernel.asm -felf32 -o kernel.o -g
-res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o ps2mouse.o port.o font.o
-	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld -o res.o kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o ps2mouse.o port.o font.o
+res.o: kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o pci.c.o vbe.c.o ps2mouse.c.o port.c.o font.c.o int86.c.o
+	x86_64-elf-ld -m elf_i386 -O i386 -T link.ld -o res.o kernel.o c_kernel.o stdio.o int.o ints.o ints.c.o ps2mouse.c.o port.c.o font.c.o int86.c.o
 res: res.o
 	x86_64-elf-objcopy -O binary res.o res
 res.img: boot writefat touch.txt bootloader res
@@ -45,13 +46,12 @@ always:
 	echo file:/KERNEL/`stat -f %z res` >> touch.txt
 	echo "// generate by makefile" > config.h
 	echo "#define kernel_off $(KERNEL_OFF)" >> config.h
-	echo "#define LFB_varible_addr $(LFB_VARIBLE_ADDR)" >> config.h
-	echo "#define VesaInfoBlockBuffer $(VesaInfoBlockBufferOff)" >> config.h
-	echo "#define VesaModeInfoBlockBuffer $(VesaModeInfoBlockBufferOff)" >> config.h
+	echo "#define REGS_OFF $(REGS_OFF)" >> config.h
+	echo "#define VESA_OFF $(VESA_OFF)" >> config.h
 	echo ";; generate by makefile" > config.inc
 	echo "%define kernel_off $(KERNEL_OFF)" >> config.inc
-	echo "%define VesaInfoBlockBuffer $(VesaInfoBlockBufferOff)" >> config.inc
-	echo "%define VesaModeInfoBlockBuffer $(VesaModeInfoBlockBufferOff)" >> config.inc
+	echo "%define REGS_OFF $(REGS_OFF)" >> config.inc
+	echo "%define VESA_OFF $(VESA_OFF)" >> config.inc
 
 
 
@@ -59,7 +59,7 @@ c_kernel.o: kernel.cpp stdio.h port.h to_call_int.h
 	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o c_kernel.o kernel.cpp
 stdio.o: stdio.cpp
 	clang++ -std=c++17 -g --target=x86_64 -m32 -c -o stdio.o stdio.cpp
-COMPILE=clang++ -std=c++17 -g --target=x86_64 -m32 -c -o 
+COMPILE=clang++ -std=c++17 -g -O2 -ffreestanding -mno-sse -mno-avx --target=x86_64 -m32 -c -o 
 int.o: int.cpp int.h
 	$(COMPILE) int.o int.cpp
 ints.o: ints.asm
@@ -70,13 +70,21 @@ pci.c.o: pci.cpp
 	$(COMPILE) pci.c.o pci.cpp
 vbe.c.o: vbe.cpp
 	$(COMPILE) vbe.c.o vbe.cpp
-ps2mouse.o: ps2mouse.cpp
-	$(COMPILE) ps2mouse.o ps2mouse.cpp
+
+ps2mouse.c.o: ps2mouse.cpp
+	$(COMPILE) ps2mouse.c.o ps2mouse.cpp
+port.c.o: port.cpp port.h
+	$(COMPILE) port.c.o port.cpp
+font.c.o: font.c font.h
+	$(COMPILE) font.c.o font.c
+
+
+
 file2symbolc: file2symbolc.cpp
 	clang++ -o file2symbolc file2symbolc.cpp
 to_call_int: to_call_int.asm
 	nasm -fbin -o to_call_int to_call_int.asm
 to_call_int.h: to_call_int file2symbolc
 	./file2symbolc to_call_int to_call_int > to_call_int.h
-font.o:font.c
-	$(COMPILE) font.o font.c
+int86.c.o: int86.cpp int86.h to_real.h to_call_int.h
+	$(COMPILE)int86.c.o int86.cpp

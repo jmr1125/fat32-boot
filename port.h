@@ -9,35 +9,20 @@ typedef dword uint32_t;
 typedef qword uint64_t;
 typedef unsigned short USHORT;
 
-inline byte in_byte(short port){
-  byte b;
-  asm volatile("in %%dx, %%eax" : "=a" (port) : "d" (b));
-  return b;
-}
-inline word in_word(short port){
-  word w;
-  asm volatile("in %%dx, %%ax" : "=a" (port) : "d" (w));
-  return w;
-}
-inline dword in_dword(short port){
-  dword d;
-  asm volatile("in %%dx, %%eax" : "=a" (port) : "d" (d));
-  return d;
-}
-inline void out_byte(short port, byte b){
-  asm volatile("out %%al, %%dx" : : "a" (b), "d" (port));
-}
-inline void out_word(short port, word w){
-  asm volatile("out %%ax, %%dx" : : "a" (w), "d" (port));
-}
-inline void out_dword(short port, dword d){
-  asm volatile("out %%eax, %%dx" : : "a" (d), "d" (port));
-}
-
-#define outb(port, data)		(out_byte(port, data))
-#define outw(port, data)		(out_word(port, data))
-#define outl(port, data)		(out_dword(port, data))
-#define inb(port)			(in_byte(port))
+byte in_byte(short port) ;
+word in_word(short port);
+dword in_dword(short port);
+void out_byte(short port, byte b);
+void out_word(short port, word w);
+void out_dword(short port, dword d) ;
+#define outb(port, data) (out_byte(port, data))
+#define outw(port, data) (out_word(port, data))
+#define outl(port, data) (out_dword(port, data))
+#define inb(port) (in_byte(port))
 #define inl(port) (inb(port))
-#define WRITE_PORT_USHORT(port, data) (out_word(port,data))
+#define WRITE_PORT_USHORT(port, data) (out_word(port, data))
 #define READ_PORT_USHORT(port) (in_word(port))
+#define inportb(port) (inb(port))
+#define inportw(port) (inw(port))
+#define inportl(port) (inl(port))
+#define outportb(port, data) (outb(port, data))

@@ -1,49 +1,103 @@
-org 0x7c00
-	[bits 32]
-	mov [return_addr], eax
-	cli
-	lgdt [realgdtr]
-	mov eax,cr0
-	and eax,0x7ffffffe
-	mov cr0,eax
-	jmp 0x18:setupRmode-0x180
+	org 0x7c00
+	%include "config.inc"
 	[bits 16]
-setupRmode:
-	mov ax, 0x0
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	lidt [idt_real]
-	xchg bx,bx
-	mov ah,0x0e
-	mov al,'H'
-	mov bl,0
-	int 10h
-	mov eax, [return_addr]
-	call setup_pmode
-	jmp 0x08:.1
-	.1:
-	jmp eax
-hang:	cli
-	hlt
-	%include "pmode.inc"
-	section .data
-idt_real:
-	dw 0x3ff
-	dd 0
-realgdt:
-    dq 0                    ; 空描述符
-    dq 0x00CF9A000000FFFF   ; 代码段描述符 (32 位代码段)
-    dq 0x00CF92000000FFFF   ; 数据段描述符 (32 位数据段)
-    dq 0x00009A000000FFFF   ; 代码段描述符 (16 位代码段)
-    dq 0x000092000000FFFF   ; 数据段描述符 (16 位数据段)
+enter:
+	mov eax,0x10
+	mov ds,eax
+	mov es,eax
+	mov gs,eax
+	mov fs,eax
+	mov gs,eax
+	mov ss,eax
+	mov eax,cr0
+	and eax,0xfffffffe
+	mov cr0,eax
+	jmp 0x0:start
+	[bits 16]
+start:	
+	;; xchg bx,bx
+	pusha			; esp=0xfff0 ebp=0xfff8
+	mov ax,0
+	mov ds,ax
+	mov es,ax
+	mov fs,ax
+	mov gs,ax
+	mov ss,ax
+	lidt [idt16_ptr]
+	;; xchg bx,bx
+	mov esi,REGS_OFF+regs.interrupt_no
+	mov al,[esi]
+	mov byte [int_no],al
+	mov esi,REGS_OFF+regs.eax
+	mov eax,[esi]
+	mov esi,REGS_OFF+regs.ebx
+	mov ebx,[esi]
+	mov esi,REGS_OFF+regs.ecx
+	mov ecx,[esi]
+	mov esi,REGS_OFF+regs.edx
+	mov edx,[esi]
+	mov esi,REGS_OFF+regs.edi
+	mov edi,[esi]
+	mov esi,REGS_OFF+regs.es
+	mov es,[esi]
+	mov esi,REGS_OFF+regs.ds
+	mov ds,[esi]
+	mov esi,REGS_OFF+regs.esi
+	mov esi,[esi]
+	;; xchg bx,bx
+	db 0xcd
+int_no:	db 0
+	push esi
+	mov esi,REGS_OFF+regs.edi
+	mov [esi],edi
+	pop esi
+	mov edi,REGS_OFF+regs.esi
+	mov [edi],esi
+	mov esi,REGS_OFF+regs.edx
+	mov [esi],edx
+	mov esi,REGS_OFF+regs.ecx
+	mov [esi],ecx
+	mov esi,REGS_OFF+regs.ebx
+	mov [esi],ebx
+	mov esi,REGS_OFF+regs.eax
+	mov [esi],eax
+	mov esi,REGS_OFF+regs.es
+	mov [esi],es
+	mov esi,REGS_OFF+regs.ds
+	mov [esi],ds
+	popa			;ffe0 fff8
+hang:	nop			;fff0 fff8
+	nop
+	cli
+	lgdt [gdt_desc]
+	mov eax,cr0
+	or eax,1
+	mov cr0,eax
+	jmp 0x8:t
+	[bits 32]
+t:	ret
+			
+	idt16_ptr:                                 ; IDT table pointer for 16bit access
+		dw 0x03FF                              ; table limit (size)
+		dd 0x00000000                          ; table base address
+		
+	struc regs
+	.eax:	resd 1
+	.ebx:	resd 1
+	.ecx:	resd 1
+	.edx:	resd 1
+	.esi:	resd 1
+	.edi:	resd 1
+	.ebp:	resd 1
+	.esp:	resd 1
+	.eflag:	resd 1
+	.es:	resd 1
+	.ds:	resd 1
+	.interrupt_no:	resd 1
+	endstruc
 
-realgdtr:
-    dw realgdt_end - realgdt - 1    ; GDT 长度
-    dd realgdt                  ; GDT 基地址
-realgdt_end:
+
+	%include "pmode.inc"
 gdt:
 	; Address for the GDT
 
@@ -72,4 +126,3 @@ gdt:
 	gdt_desc:                       ; The GDT descriptor
 	dw gdt_end - gdt - 1; Limit (size)
 	dd gdt; Address of the GDT
-return_addr:	dd 0

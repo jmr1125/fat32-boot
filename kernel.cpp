@@ -1,6 +1,7 @@
 #include "config.h"
 #include "font.h"
 #include "int.h"
+#include "int86.h"
 #include "port.h"
 #include "ps2mouse.h"
 #include "stdio.h"
@@ -9,32 +10,42 @@
 extern "C" {
 extern void k_main(void);
 }
-VbeInfoBlock *const vbeInfoBlock = (VbeInfoBlock *)VesaInfoBlockBuffer;
-vbe_mode_info_structure *const vbeModeInfo =
-    (vbe_mode_info_structure *)VesaModeInfoBlockBuffer;
 void k_main() {
-  asm volatile("cli");
-  initialize_interrupts();
-  IRQ_clear_mask(12);
-  mouse_install();
+  regs in;
+  in.eax = 0x0;
+  in.ebx = 0x0;
+  in.ecx = 0x0;
+  in.edx = 0x0;
+  in.esi = 0x0;
+  in.edi = 0x0;
+  in.es = 0;
+  in.ds = 0;
+  in.eax = 0x4f01;
+  in.ecx = 0x4118;
+  // in.es = ((long long)VESA_OFF & 0x10000) >> 4;
+  in.es = 0x1000;
+  // in.edi = VESA_OFF % 0xffff;
+  in.edi = 0x30; // 0x10030
+  regs out;
+  int86(0x10, &in, &out);
+  in.eax = 0x4f02;
+  in.ebx = 0x4118;
+  in.es = 0;
+  in.edi = 0;
+  int86(0x10, &in, &out);
+  const auto vbeModeInfo = (vbe_mode_info_structure *)(VESA_OFF);
   const auto pitch = vbeModeInfo->pitch;
   const auto width = vbeModeInfo->width;
   const auto height = vbeModeInfo->height;
   const auto bpp = vbeModeInfo->bpp;
   char *const lfb = (char *)vbeModeInfo->framebuffer;
-  // for (int r = 0; r < 256; ++r) {
-  //   for (int x = 0; x < 256; ++x) {
-  //     for (int y = 0; y < 256; ++y) {
-  //       lfb[x * pitch + y * bpp / 8 + 0] = r;
-  //       lfb[x * pitch + y * bpp / 8 + 1] = x;
-  //       lfb[x * pitch + y * bpp / 8 + 2] = y;
-  //     }
-  //   }
-  // }
-  int x=100,y=200;
-  draw('h', x, y, lfb, pitch, bpp,4);
-  draw('e', x, y+16, lfb, pitch, bpp,4);
-  draw('l', x, y+16*2, lfb, pitch, bpp,4);
-  draw('l', x, y+16*3, lfb, pitch, bpp,4);
-  draw('o', x, y+16*4, lfb, pitch, bpp,4);
+  initialize_interrupts();
+  mouse_install();
+  int x = 100, y = 100;
+  while (true) {
+    draw(' ', y, x, lfb, pitch, bpp, 1);
+    draw('x', mouse_dy, mouse_dx, lfb, pitch, bpp, 1);
+    y += mouse_dy;
+    x += mouse_dx;
+  }
 }
