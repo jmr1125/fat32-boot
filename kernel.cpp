@@ -45,6 +45,7 @@ void k_main() {
   char *const lfb = (char *)vbeModeInfo->framebuffer;
   initialize_interrupts();
   mouse_install();
+  initialize_scancode();
   outb(0x64, 0xad);
   while (inb(0x64) & 1) {
     char c = inb(0x60);
@@ -62,7 +63,7 @@ void k_main() {
     print_hex(c);
     print("\n");
   }
-  outb(0x60, 0x2);// why scan code 1,2,3 all act like code 1
+  outb(0x60, 0x2); // why scan code 1,2,3 all act like code 1
   while (c != 0xfa) {
     while (!getkey(&c))
       ;
@@ -78,6 +79,14 @@ void k_main() {
       draws("key", 40, 0, lfb, pitch, bpp);
       to_hex(c, buf);
       draws(buf, 40, 64, lfb, pitch, bpp);
+      draws("key", 60, 0, lfb, pitch, bpp);
+      to_hex(scancode1[c].c, buf);
+      draws(buf, 60, 64, lfb, pitch, bpp);
+      draws("key", 80, 0, lfb, pitch, bpp);
+      draws(get_key_name(scancode1[c].k), 80, 64, lfb, pitch, bpp);
+      draws("key", 100, 0, lfb, pitch, bpp);
+      draws((scancode1[c].k ? "pressed" : "released"), 100, 64, lfb, pitch,
+            bpp);
     }
     y += mouse_dy;
     x += mouse_dx;
