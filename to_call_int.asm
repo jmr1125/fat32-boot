@@ -75,7 +75,14 @@ hang:	nop			;fff0 fff8
 	mov cr0,eax
 	jmp 0x8:t
 	[bits 32]
-t:	ret
+t:
+	mov ax,0x10
+	mov ds,ax
+	mov ss,ax
+	mov es,ax
+	mov fs,ax
+	mov gs,ax
+	ret
 			
 	idt16_ptr:                                 ; IDT table pointer for 16bit access
 		dw 0x03FF                              ; table limit (size)

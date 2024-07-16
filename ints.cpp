@@ -1,4 +1,6 @@
+#include "debug_port0xe9.h"
 #include "port.h"
+#include "ps2keyboard.h"
 #include "stdio.h"
 // implementation for interupt 0 ~ 19
 extern "C" {
@@ -38,39 +40,81 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 }
-void int0() { puts("int0: DIV BY Zero", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int1() { puts("int1: DEBUG", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int2() { puts("int2: NMI", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int3() { puts("int3: BREAKPOINT", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int4() { puts("int4: OVERFLOW", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int5() { puts("int5: BOUND", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int6() { puts("int6: INVALID OPCODE", COLOR_LIGHT_RED, (char *)0xb80a0); }
+void int0() {
+  trap();
+  print("int0: DIV BY Zero");
+}
+void int1() {
+  trap();
+  print("int1: DEBUG");
+}
+void int2() {
+  trap();
+  print("int2: NMI");
+}
+void int3() {
+  trap();
+  print("int3: BREAKPOINT");
+}
+void int4() {
+  trap();
+  print("int4: OVERFLOW");
+}
+void int5() {
+  trap();
+  print("int5: BOUND");
+}
+void int6() {
+  trap();
+  print("int6: INVALID OPCODE");
+}
 void int7() {
-  puts("int7: DEVICE NOT AVAILABLE", COLOR_LIGHT_RED, (char *)0xb80a0);
+  trap();
+  print("int7: DEVICE NOT AVAILABLE");
 }
-void int8() { puts("int8: DOUBLE FAULT", COLOR_LIGHT_RED, (char *)0xb80a0); }
+void int8() {
+  trap();
+  print("int8: DOUBLE FAULT");
+}
 void int9() {
-  puts("int9: COPROC SEGMENT OVERFLOW", COLOR_LIGHT_RED, (char *)0xb80a0);
+  trap();
+  print("int9: COPROC SEGMENT OVERFLOW");
 }
-void int10() { puts("int10: INVALID TSS", COLOR_LIGHT_RED, (char *)0xb80a0); }
+void int10() {
+  trap();
+  print("int10: INVALID TSS");
+}
 void int11() {
-  puts("int11: SEGMENT NOT PRESENT", COLOR_LIGHT_RED, (char *)0xb80a0);
+  trap();
+  print("int11: SEGMENT NOT PRESENT");
 }
-void int12() { puts("int12: STACK FAULT", COLOR_LIGHT_RED, (char *)0xb80a0); }
+void int12() {
+  trap();
+  print("int12: STACK FAULT");
+}
 void int13() {
-  puts("int13: GENERAL PROTECTION FAULT", COLOR_LIGHT_RED, (char *)0xb80a0);
+  trap();
+  print("int13: GENERAL PROTECTION FAULT");
 }
-void int14() { puts("int14: PAGE FAULT", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int16() { puts("int16: FPU ERROR", COLOR_LIGHT_RED, (char *)0xb80a0); }
+void int14() {
+  trap();
+  print("int14: PAGE FAULT");
+}
+void int16() {
+  trap();
+  print("int16: FPU ERROR");
+}
 void int17() {
-  puts("int17: ALIGNMENT CHECK", COLOR_LIGHT_RED, (char *)0xb80a0);
+  trap();
+  print("int17: ALIGNMENT CHECK");
 }
-void int18() { puts("int18: MACHINE CHECK", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void int19() { puts("int19: SIMD FAULT", COLOR_LIGHT_RED, (char *)0xb80a0); }
-void print(char *s) {
-  for (; *s; ++s) {
-    outb(0xe9, *s);
-  }
+void int18() {
+  trap();
+  print("int18: MACHINE CHECK");
+}
+void int19() {
+  trap();
+  print("int19: SIMD FAULT");
 }
 void irq0() { // print("irq0\n");
 }
@@ -112,36 +156,20 @@ void irq12() {
     } else {
       c1 = bytes[bytes_count - 3];
     }
-    print("c1: ");
-    for (int i = 7; i >= 0; --i) {
-      if (c1 & (1 << i)) {
-        print("1");
-      } else {
-        print("0");
-      }
-    }
+    print("\nbytes_count:");
+    print_hex(bytes_count);
+    print("\nc1: ");
+    print_bin(c1);
     print("\nc2: ");
-    for (int i = 7; i >= 0; --i) {
-      if (c2 & (1 << i)) {
-        print("1");
-      } else {
-        print("0");
-      }
-    }
+    print_bin(c2);
     print("\nc3: ");
-    for (int i = 7; i >= 0; --i) {
-      if (c3 & (1 << i)) {
-        print("1");
-      } else {
-        print("0");
-      }
-    }
+    print_bin(c3);
     print("\n");
     if ((c1 & 0b00001000) == 0) {
       i = -1;
     }
-    mouse_dx = c2;
-    mouse_dy = -c3;
+    mouse_dy = c2;
+    mouse_dx = -c3;
   }
 }
 void irq13() { print("irq13\n"); }
